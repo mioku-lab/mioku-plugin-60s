@@ -1,4 +1,5 @@
 import type { SixtySecondsService } from "../../src/services/60s";
+import type { AIService } from "../../src/services/ai/types";
 import type { ScreenshotService } from "../../src/services/screenshot/types";
 
 export interface SixtySecondsApiConfig {
@@ -62,6 +63,8 @@ export interface SixtySecondsRenderResult {
   ok: boolean;
   title: string;
   text: string;
+  markdown?: string;
   imageUrl?: string;
+  preferScreenshot?: boolean;
   noticeInstruction?: string;
 }

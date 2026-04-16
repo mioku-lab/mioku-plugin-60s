@@ -6,12 +6,12 @@ export const SIXTY_SECONDS_BASE_CONFIG: SixtySecondsBaseConfig = {
     timeoutMs: 15000,
   },
   trigger: {
-    requirePrefix: true,
+    requirePrefix: false,
     prefixes: ["60s", "/60s"],
   },
   behavior: {
     quoteReply: false,
-    includeImages: true,
+    includeImages: false,
     maxItems: 6,
   },
   defaults: {

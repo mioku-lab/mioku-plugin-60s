@@ -6,12 +6,12 @@ const sixtySecondsSkills: AISkill[] = [
   {
     name: "sixty_seconds",
     description:
-      "发送 60s 插件支持的资讯与实用信息，包括新闻、AI 快报、汇率、历史、Epic、IT、金价、油价、天气和摸鱼日报",
+      "发送 60s 插件支持的资讯与实用信息，包括 60s 新闻、AI 快报、汇率、历史、Epic、IT、金价、油价、天气和摸鱼日报",
     tools: [
       {
         name: "send_report",
         description:
-          "发送一个 60s 报告到当前聊天。天气需要 query，油价需要 region，其余参数按类型选填。",
+          "发送一个 60s 报告到当前聊天。油价需要 region，天气需要 query，其余参数按类型选填。",
         parameters: {
           type: "object",
           properties: {

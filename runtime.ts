@@ -1,4 +1,4 @@
-import type { SixtySecondsPluginRuntime } from "./shared";
+import type { SixtySecondsPluginRuntime } from "./runtime-core";
 import {
   getPluginRuntimeState,
   resetPluginRuntimeState,

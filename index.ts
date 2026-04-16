@@ -1,9 +1,11 @@
 import type { AIService } from "../../src/services/ai/types";
 import type { ConfigService } from "../../src/services/config/tpyes";
 import type { SixtySecondsService } from "../../src/services/60s";
+import type { ScreenshotService } from "../../src/services/screenshot/types";
 import { definePlugin, type MiokiContext } from "mioki";
 import { SIXTY_SECONDS_BASE_CONFIG } from "./configs/base";
-import { parseReportType, SixtySecondsPluginRuntime } from "./shared";
+import { matchSixtySecondsCommand } from "./commands";
+import { SixtySecondsPluginRuntime } from "./runtime-core";
 import {
   resetSixtySecondsRuntimeState,
   setSixtySecondsRuntimeState,
@@ -41,6 +43,9 @@ export default definePlugin({
       | undefined;
     const configService = ctx.services?.config as ConfigService | undefined;
     const aiService = ctx.services?.ai as AIService | undefined;
+    const screenshotService = ctx.services?.screenshot as
+      | ScreenshotService
+      | undefined;
 
     let baseConfig = cloneConfig(SIXTY_SECONDS_BASE_CONFIG);
 
@@ -58,10 +63,15 @@ export default definePlugin({
       services: {
         sixtySecondsService,
         aiService,
+        screenshotService,
       },
       config: baseConfig,
       logger: ctx.logger,
     });
+
+    if (!screenshotService) {
+      ctx.logger.warn("screenshot 服务未注入，60s 将回退为文本发送");
+    }
 
     setSixtySecondsRuntimeState({ runtime });
 
@@ -80,76 +90,26 @@ export default definePlugin({
       if (!rawText) {
         return;
       }
-
-      const stripResult = stripCommandPrefix(
-        rawText,
-        baseConfig.trigger.prefixes,
-      );
-
-      let commandText = "";
-
+      const stripResult = stripCommandPrefix(rawText, baseConfig.trigger.prefixes);
+      let commandText = rawText;
       if (stripResult.hasPrefix) {
-        commandText = stripResult.value;
-      } else {
-        commandText = rawText;
+        commandText = stripResult.value || "60s";
       }
 
-      if (!commandText) {
-        await runtime.sendReport(ctx, event, {
-          type: "world_news",
-        });
+      const matched = matchSixtySecondsCommand(commandText);
+      if (!matched) {
         return;
       }
 
-      const reportType = parseReportType(commandText);
-      if (!reportType) {
-        return;
-      }
-
-      if (reportType === "it_news") {
-        await runtime.sendReport(ctx, event, {
-          type: reportType,
-        });
-        return;
-      }
-
-      if (reportType === "fuel_price") {
-        await runtime.sendReport(ctx, event, {
-          type: reportType,
-        });
-        return;
-      }
-
-      if (reportType === "weather") {
-        await runtime.sendReport(ctx, event, {
-          type: reportType,
-        });
-        return;
-      }
-
-      if (reportType === "world_news") {
-        await runtime.sendReport(ctx, event, {
-          type: reportType,
-        });
-        return;
-      }
-
-      if (reportType === "ai_news") {
-        await runtime.sendReport(ctx, event, {
-          type: reportType,
-        });
-        return;
-      }
-
-      if (reportType === "history") {
-        await runtime.sendReport(ctx, event, {
-          type: reportType,
-        });
-        return;
-      }
+      runtime.updateServices({
+        sixtySecondsService,
+        aiService,
+        screenshotService: (ctx.services?.screenshot as ScreenshotService | undefined) || screenshotService,
+      });
 
       await runtime.sendReport(ctx, event, {
-        type: reportType,
+        type: matched.reportType,
+        ...matched.requestOverrides,
       });
     });
 
