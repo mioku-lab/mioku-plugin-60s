@@ -1,0 +1,67 @@
+import type { SixtySecondsService } from "../../src/services/60s";
+import type { ScreenshotService } from "../../src/services/screenshot/types";
+
+export interface SixtySecondsApiConfig {
+  baseUrl: string;
+  timeoutMs: number;
+}
+
+export interface SixtySecondsTriggerConfig {
+  requirePrefix: boolean;
+  prefixes: string[];
+}
+
+export interface SixtySecondsBehaviorConfig {
+  quoteReply: boolean;
+  includeImages: boolean;
+  maxItems: number;
+}
+
+export interface SixtySecondsDefaultsConfig {
+  exchangeCurrency: string;
+  fuelRegion: string;
+  weatherQuery: string;
+  itNewsLimit: number;
+}
+
+export interface SixtySecondsBaseConfig {
+  api: SixtySecondsApiConfig;
+  trigger: SixtySecondsTriggerConfig;
+  behavior: SixtySecondsBehaviorConfig;
+  defaults: SixtySecondsDefaultsConfig;
+}
+
+export type SixtySecondsReportType =
+  | "world_news"
+  | "ai_news"
+  | "exchange_rate"
+  | "history"
+  | "epic_games"
+  | "it_news"
+  | "gold_price"
+  | "fuel_price"
+  | "weather"
+  | "moyu_daily";
+
+export interface SixtySecondsPluginServices {
+  sixtySecondsService?: SixtySecondsService;
+  aiService?: AIService;
+  screenshotService?: ScreenshotService;
+}
+
+export interface SixtySecondsRenderRequest {
+  type: SixtySecondsReportType;
+  date?: string;
+  currency?: string;
+  region?: string;
+  query?: string;
+  limit?: number;
+}
+
+export interface SixtySecondsRenderResult {
+  ok: boolean;
+  title: string;
+  text: string;
+  imageUrl?: string;
+  noticeInstruction?: string;
+}

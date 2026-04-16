@@ -1,0 +1,65 @@
+{
+  "name": "mioku-plugin-60s",
+  "version": "1.0.0",
+  "description": "基于 mioku-60s-service 的资讯与实用信息插件",
+  "main": "index.ts",
+  "mioku": {
+    "services": [
+      "60s",
+      "config",
+      "ai",
+      "screenshot"
+    ],
+    "help": {
+      "title": "60s 资讯",
+      "description": "调用 60s API 获取新闻、AI、油价、天气、金价等信息",
+      "commands": [
+        {
+          "cmd": "60s",
+          "desc": "获取今日新闻简报",
+          "role": "member"
+        },
+        {
+          "cmd": "it",
+          "desc": "获取实时 IT 资讯",
+          "role": "member"
+        },
+        {
+          "cmd": "金价",
+          "desc": "获取黄金价格",
+          "role": "member"
+        },
+        {
+          "cmd": "油价",
+          "desc": "获取汽油价格，需加地区名，如：杭州油价",
+          "role": "member"
+        },
+        {
+          "cmd": "天气",
+          "desc": "获取实时天气，需加地区名，如：北京天气",
+          "role": "member"
+        },
+        {
+          "cmd": "摸鱼日报",
+          "desc": "获取摸鱼日报",
+          "role": "member"
+        },
+        {
+          "cmd": "epic",
+          "desc": "获取 Epic 免费游戏",
+          "role": "member"
+        },
+        {
+          "cmd": "历史上的今天",
+          "desc": "获取历史上的今天",
+          "role": "member"
+        },
+        {
+          "cmd": "ai",
+          "desc": "获取 AI 资讯快报",
+          "role": "member"
+        }
+      ]
+    }
+  }
+}
