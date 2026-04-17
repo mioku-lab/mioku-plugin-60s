@@ -249,20 +249,30 @@ export function buildWeatherAppHtml(
   const condition = escapeHtml(conditionRaw);
   const temperature = normalizeNumber(data?.weather?.temperature);
   const humidity = normalizeNumber(data?.weather?.humidity);
+  const pressure = normalizeNumber(data?.weather?.pressure);
   const windDirection = escapeHtml(data?.weather?.wind_direction || "--");
   const windPower = escapeHtml(data?.weather?.wind_power || "--");
   const updated = escapeHtml(data?.weather?.updated || "--");
+  const weatherIcon = escapeHtml(data?.weather?.weather_icon || "");
+  const weatherColors = Array.isArray(data?.weather?.weather_colors)
+    ? data.weather.weather_colors
+    : null;
+
   const aqi = normalizeNumber(data?.air_quality?.aqi);
   const quality = escapeHtml(data?.air_quality?.quality || "--");
-  const weatherEmoji = pickWeatherEmoji(conditionRaw);
-  const theme = pickWeatherTheme(conditionRaw, night);
+  const pm25 = normalizeNumber(data?.air_quality?.pm25);
+  const pm10 = normalizeNumber(data?.air_quality?.pm10);
+  const sunriseData = data?.sunrise || {};
+  const sunrise = escapeHtml(sunriseData.sunrise_desc || "--");
+  const sunset = escapeHtml(sunriseData.sunset_desc || "--");
+
   const alerts = Array.isArray(data?.alerts) ? data.alerts : [];
   const alertPalette = pickAlertDangerPalette(alerts, night);
+
   const alertHtml =
     alerts.length > 0
       ? `
       <div class="alert-card">
-        <div class="section-title">天气预警</div>
         ${alerts
           .slice(0, 2)
           .map((item: any) => {
@@ -279,212 +289,403 @@ export function buildWeatherAppHtml(
   const hourlyForecasts = Array.isArray(forecastData?.hourly_forecast)
     ? forecastData.hourly_forecast.slice(0, 8)
     : [];
-  const forecastHtml =
-    hourlyForecasts.length > 0
-      ? `
-      <div class="glass forecast-glass">
-        <div class="section-title">天气预报</div>
-        <div class="hourly-forecast">
+
+  const bgColor1 =
+    weatherColors && weatherColors[0]
+      ? weatherColors[0]
+      : night
+        ? "#2d3a5c"
+        : "#6ba7de";
+  const bgColor2 =
+    weatherColors && weatherColors[1]
+      ? weatherColors[1]
+      : night
+        ? "#1a2540"
+        : "#4a8bc7";
+  const bgColor3 =
+    weatherColors && weatherColors[2]
+      ? weatherColors[2]
+      : night
+        ? "#0f1a2e"
+        : "#3a7bc8";
+
+  const pageBg = `linear-gradient(165deg, ${bgColor1} 0%, ${bgColor2} 50%, ${bgColor3} 100%)`;
+  const textColor = night ? "#ffffff" : "#ffffff";
+  const weakTextColor = night
+    ? "rgba(255,255,255,0.75)"
+    : "rgba(255,255,255,0.85)";
+  const cardBg = night ? "rgba(0,0,0,0.25)" : "rgba(255,255,255,0.2)";
+  const cardBorder = night ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.3)";
+  const cardShadow = night
+    ? "0 12px 40px rgba(0,0,0,0.3)"
+    : "0 12px 40px rgba(0,0,0,0.15)";
+
+  const sunriseIcon = night ? "🌙" : "🌅";
+  const windIcon =
+    windPower.includes("3") ||
+    windPower.includes("4") ||
+    windPower.includes("5") ||
+    windPower.includes("6")
+      ? "💨"
+      : "🍃";
+
+  return `
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html {
+      width: 100%;
+      min-height: 100vh;
+      background: ${pageBg};
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: ${textColor};
+      line-height: 1.4;
+      padding: 32px 24px;
+      min-height: 100vh;
+    }
+    .weather-app {
+      width: 100%;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+    .main-card {
+      background: ${cardBg};
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid ${cardBorder};
+      border-radius: 32px;
+      padding: 28px 24px;
+      box-shadow: ${cardShadow};
+    }
+    .location-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+    .location-icon {
+      font-size: 20px;
+    }
+    .location {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+    .current-weather {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-top: 16px;
+      gap: 16px;
+    }
+    .temp-block {
+      flex: 1;
+    }
+    .temp {
+      font-size: 80px;
+      font-weight: 200;
+      line-height: 1;
+      letter-spacing: -3px;
+    }
+    .temp-unit {
+      font-size: 36px;
+      font-weight: 300;
+      vertical-align: super;
+    }
+    .condition {
+      font-size: 18px;
+      margin-top: 6px;
+      opacity: 0.9;
+    }
+    .condition-text {
+      font-weight: 500;
+    }
+    .icon-block {
+      width: 100px;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .weather-icon-img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .update-time {
+      font-size: 13px;
+      margin-top: 12px;
+      opacity: 0.7;
+    }
+    .divider {
+      height: 1px;
+      background: ${cardBorder};
+      margin: 20px 0;
+    }
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .metric-card {
+      background: ${cardBg};
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid ${cardBorder};
+      border-radius: 20px;
+      padding: 14px 16px;
+    }
+    .metric-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+    .metric-icon {
+      font-size: 16px;
+    }
+    .metric-label {
+      font-size: 13px;
+      opacity: 0.8;
+    }
+    .metric-value {
+      font-size: 22px;
+      font-weight: 600;
+    }
+    .metric-sub {
+      font-size: 12px;
+      opacity: 0.7;
+      margin-top: 2px;
+    }
+    .metric-value-row {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+    }
+    .metric-unit {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+    .sun-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 2px;
+    }
+    .sun-time {
+      font-size: 15px;
+      font-weight: 500;
+    }
+    .forecast-section {
+      margin-top: 20px;
+    }
+    .forecast-title {
+      font-size: 15px;
+      font-weight: 600;
+      opacity: 0.9;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .hourly-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      background: ${cardBg};
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid ${cardBorder};
+      border-radius: 20px;
+      padding: 16px 12px;
+    }
+    .hourly-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+    }
+    .hourly-time {
+      font-size: 12px;
+      opacity: 0.8;
+      font-weight: 500;
+    }
+    .hourly-icon {
+      width: 22px;
+      height: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hourly-icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .hourly-icon .forecast-icon-emoji,
+    .forecast-icon-emoji {
+      font-size: 16px;
+    }
+    .hourly-temp {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .alert-card {
+      margin-top: 16px;
+      background: ${alertPalette.bg};
+      border: 1px solid ${alertPalette.border};
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-radius: 20px;
+      padding: 14px 16px;
+    }
+    .alert-item + .alert-item {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid ${alertPalette.divider};
+    }
+    .alert-item h4 {
+      font-size: 14px;
+      font-weight: 700;
+      margin: 0 0 4px;
+    }
+    .alert-item p {
+      font-size: 13px;
+      line-height: 1.5;
+      opacity: 0.95;
+      margin: 0;
+    }
+  </style>
+  <div class="weather-app">
+    <div class="main-card">
+      <div class="location-row">
+        <span class="location">${location}</span>
+      </div>
+      <div class="current-weather">
+        <div class="temp-block">
+          <div class="temp">${temperature}<span class="temp-unit">°</span></div>
+          <div class="condition">
+            <span class="condition-text">${condition}</span>
+          </div>
+          <div class="update-time">更新于 ${updated}</div>
+        </div>
+        <div class="icon-block">
+          ${
+            weatherIcon
+              ? `<img class="weather-icon-img" src="${weatherIcon}" alt="${condition}" onerror="this.style.display='none'">`
+              : ""
+          }
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="metrics-grid">
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-icon">💧</span>
+            <span class="metric-label">湿度</span>
+          </div>
+          <div class="metric-value-row">
+            <span class="metric-value">${humidity}</span>
+            <span class="metric-unit">%</span>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-icon">🌡️</span>
+            <span class="metric-label">气压</span>
+          </div>
+          <div class="metric-value-row">
+            <span class="metric-value">${pressure}</span>
+            <span class="metric-unit">hPa</span>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-icon">${windIcon}</span>
+            <span class="metric-label">${windDirection}</span>
+          </div>
+          <div class="metric-value-row">
+            <span class="metric-value">${windPower}</span>
+            <span class="metric-unit">级</span>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-icon">🫧</span>
+            <span class="metric-label">PM2.5</span>
+          </div>
+          <div class="metric-value-row">
+            <span class="metric-value">${pm25}</span>
+          </div>
+          <div class="metric-sub">AQI ${aqi} · ${quality}</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-icon">🌅</span>
+            <span class="metric-label">日出</span>
+          </div>
+          <div class="sun-row">
+            <span class="sun-time">${sunrise}</span>
+          </div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-header">
+            <span class="metric-icon">🌇</span>
+            <span class="metric-label">日落</span>
+          </div>
+          <div class="sun-row">
+            <span class="sun-time">${sunset}</span>
+          </div>
+        </div>
+      </div>
+
+      ${alertHtml}
+
+      ${
+        hourlyForecasts.length > 0
+          ? `
+      <div class="forecast-section">
+        <div class="forecast-title">
+          <span>🕐</span>
+          <span>天气预报</span>
+        </div>
+        <div class="hourly-row">
           ${hourlyForecasts
-            .map((item: any) => {
-              const time = escapeHtml(item?.datetime?.split(" ")[1] || "--");
+            .map((item: any, index: number) => {
+              const hourStr =
+                item?.datetime?.split(" ")[1]?.substring(0, 5) || "--";
+              const hourNum = parseInt(hourStr.split(":")[0], 10);
+              const timeLabel =
+                index === 0
+                  ? "现在"
+                  : `${isNaN(hourNum) ? hourStr : hourNum}时`;
               const temp = normalizeNumber(item?.temperature);
               const cond = escapeHtml(item?.condition || "--");
+              const iconUrl = escapeHtml(item?.weather_icon || "");
               const condEmoji = pickWeatherEmoji(String(item?.condition || ""));
               return `
-              <div class="hourly-item">
-                <div class="hourly-time">${time}</div>
-                <div class="hourly-icon">${condEmoji}</div>
+              <div class="hourly-col">
+                <div class="hourly-time">${timeLabel}</div>
+                <div class="hourly-icon">
+                  ${
+                    iconUrl
+                      ? `<img src="${iconUrl}" alt="${cond}" onerror="this.parentElement.innerHTML='<span class=forecast-icon-emoji>${condEmoji}</span>'">`
+                      : `<span class="forecast-icon-emoji">${condEmoji}</span>`
+                  }
+                </div>
                 <div class="hourly-temp">${temp}°</div>
               </div>`;
             })
             .join("")}
         </div>
-      </div>`
-      : "";
-
-  return `
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      min-height: 100%;
-      background-image: ${theme.overlay}, ${theme.pageBg};
-      background-repeat: no-repeat;
-      background-size: cover;
-    }
-    body {
-      min-height: 100vh;
-      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Microsoft YaHei", sans-serif;
-      color: ${theme.text};
-      line-height: 1;
-    }
-    .weather-app {
-      width: 760px;
-      padding: 28px 24px 24px;
-      box-sizing: border-box;
-      position: relative;
-      overflow: hidden;
-      background: transparent;
-      display: block;
-    }
-    .content {
-      position: relative;
-      z-index: 1;
-    }
-    .header {
-      text-align: center;
-      margin-bottom: 18px;
-    }
-    .location {
-      font-size: 48px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-    }
-    .temp {
-      font-size: 124px;
-      line-height: 1;
-      font-weight: 300;
-      margin: 8px 0 0;
-    }
-    .hero {
-      display: block;
-      margin-top: 6px;
-    }
-    .condition {
-      font-size: 30px;
-      line-height: 1;
-      opacity: 0.96;
-      font-weight: 500;
-      white-space: nowrap;
-      margin-top: 8px;
-    }
-    .updated {
-      font-size: 20px;
-      color: ${theme.weakText};
-      margin-top: 14px;
-    }
-    .glass {
-      margin-top: 22px;
-      border-radius: 28px;
-      background: ${theme.glass};
-      border: 1px solid ${theme.glassBorder};
-      backdrop-filter: blur(20px);
-      box-shadow: ${theme.shadow};
-      padding: 18px;
-    }
-    .section-title {
-      font-size: 20px;
-      font-weight: 600;
-      opacity: 0.92;
-      margin-bottom: 14px;
-    }
-    .metrics {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-    .metric {
-      border-radius: 18px;
-      background: rgba(255,255,255,0.12);
-      border: 1px solid rgba(255,255,255,0.16);
-      padding: 14px;
-    }
-    .metric-label {
-      font-size: 16px;
-      color: ${theme.weakText};
-      margin-bottom: 6px;
-    }
-    .metric-value {
-      font-size: 30px;
-      font-weight: 600;
-      line-height: 1.1;
-    }
-    .alert-card {
-      margin-top: 16px;
-      border-radius: 24px;
-      background: ${alertPalette.bg};
-      border: 1px solid ${alertPalette.border};
-      backdrop-filter: blur(16px);
-      padding: 16px;
-    }
-    .alert-item + .alert-item {
-      margin-top: 12px;
-      padding-top: 12px;
-      border-top: 1px solid ${alertPalette.divider};
-    }
-    .alert-item h4 {
-      margin: 0;
-      font-size: 20px;
-      font-weight: 700;
-    }
-    .alert-item p {
-      margin: 6px 0 0;
-      font-size: 17px;
-      line-height: 1.5;
-      opacity: 0.96;
-    }
-    .forecast-glass {
-      margin-top: 16px;
-    }
-    .hourly-forecast {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 8px;
-    }
-    .hourly-item {
-      text-align: center;
-      padding: 10px 6px;
-      border-radius: 14px;
-      background: rgba(255,255,255,0.1);
-    }
-    .hourly-time {
-      font-size: 14px;
-      opacity: 0.8;
-    }
-    .hourly-icon {
-      font-size: 24px;
-      margin: 4px 0;
-    }
-    .hourly-temp {
-      font-size: 18px;
-      font-weight: 600;
-    }
-  </style>
-  <div class="weather-app">
-    <div class="content">
-      <div class="header">
-        <div class="location">${location}</div>
-        <div class="hero">
-          <div class="temp">${temperature}°</div>
-          <div class="condition">${weatherEmoji} ${condition}</div>
-        </div>
-        <div class="updated">更新时间 ${updated}</div>
       </div>
-      <div class="glass">
-        <div class="section-title">实时指标</div>
-        <div class="metrics">
-          <div class="metric">
-            <div class="metric-label">💧 湿度</div>
-            <div class="metric-value">${humidity}%</div>
-          </div>
-          <div class="metric">
-            <div class="metric-label">🫧 空气质量</div>
-            <div class="metric-value">AQI ${aqi}</div>
-          </div>
-          <div class="metric">
-            <div class="metric-label">🍃 空气等级</div>
-            <div class="metric-value">${quality}</div>
-          </div>
-          <div class="metric">
-            <div class="metric-label">🌬️ 风况</div>
-            <div class="metric-value">${windDirection} ${windPower}</div>
-          </div>
-        </div>
-      </div>
-      ${alertHtml}
-      ${forecastHtml}
+      `
+          : ""
+      }
     </div>
   </div>
   `;
