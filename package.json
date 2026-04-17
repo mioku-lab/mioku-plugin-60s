@@ -1,6 +1,6 @@
 {
   "name": "mioku-plugin-60s",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "基于 mioku-60s-service 的资讯与实用信息插件",
   "main": "index.ts",
   "mioku": {

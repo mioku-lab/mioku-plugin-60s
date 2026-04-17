@@ -1,4 +1,4 @@
-import type { SixtySecondsReportType } from "./types";
+import type { SixtySecondsReportType } from "../types";
 
 export interface MatchedSixtySecondsCommand {
   reportType: SixtySecondsReportType;

@@ -1,11 +1,15 @@
-import type { SixtySecondsClient } from "../../src/services/60s";
+import type { SixtySecondsClient } from "../../../src/services/60s";
 import type {
   SixtySecondsBaseConfig,
   SixtySecondsPluginServices,
   SixtySecondsRenderRequest,
   SixtySecondsRenderResult,
-} from "./types";
-import { replyWithImage, replyWithParts } from "./messages";
+} from "../types";
+import {
+  replyWithForwardNodes,
+  replyWithImage,
+  replyWithParts,
+} from "./messages";
 import { renderSixtySecondsReport } from "./renderers";
 
 function normalizeBaseUrl(value: string): string {
@@ -19,7 +23,7 @@ function cloneConfig<T>(value: T): T {
 }
 
 function shouldUseScreenshot(result: SixtySecondsRenderResult): boolean {
-  return Boolean(result.preferScreenshot && result.markdown);
+  return Boolean(result.preferScreenshot && (result.markdown || result.html));
 }
 
 export class SixtySecondsPluginRuntime {
@@ -132,6 +136,32 @@ export class SixtySecondsPluginRuntime {
     });
   }
 
+  private async sendScreenshotFromHtml(
+    ctx: any,
+    event: any,
+    html: string,
+    options?: SixtySecondsRenderResult["screenshotOptions"],
+  ): Promise<void> {
+    const screenshotService = this.getScreenshotService();
+    if (!screenshotService) {
+      throw new Error("screenshot-service 未加载");
+    }
+    const imagePath = await screenshotService.screenshot(html, {
+      width: options?.width,
+      height: options?.height,
+      fullPage: options?.fullPage ?? true,
+      quality: options?.quality,
+      type: options?.type || "png",
+    });
+    await replyWithImage({
+      ctx,
+      event,
+      text: "",
+      imageUrl: imagePath,
+      quoteReply: this.config.behavior.quoteReply,
+    });
+  }
+
   async sendReport(
     ctx: any,
     event: any,
@@ -170,9 +200,31 @@ export class SixtySecondsPluginRuntime {
       return result;
     }
 
+    if (Array.isArray(result.forwardNodes) && result.forwardNodes.length > 0) {
+      try {
+        await replyWithForwardNodes({
+          ctx,
+          event,
+          nodes: result.forwardNodes,
+        });
+        return result;
+      } catch (error) {
+        this.logger.warn(`60s 合并转发发送失败，回退文本发送: ${error}`);
+      }
+    }
+
     if (shouldUseScreenshot(result)) {
       try {
-        await this.sendScreenshotFromMarkdown(ctx, event, result.markdown!);
+        if (result.html) {
+          await this.sendScreenshotFromHtml(
+            ctx,
+            event,
+            result.html,
+            result.screenshotOptions,
+          );
+        } else if (result.markdown) {
+          await this.sendScreenshotFromMarkdown(ctx, event, result.markdown);
+        }
         return result;
       } catch (error) {
         this.logger.warn(`60s 截图发送失败，回退文本发送: ${error}`);

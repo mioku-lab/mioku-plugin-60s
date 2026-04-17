@@ -6,12 +6,12 @@ const sixtySecondsSkills: AISkill[] = [
   {
     name: "sixty_seconds",
     description:
-      "发送 60s 插件支持的资讯与实用信息，包括 60s 新闻、AI 快报、汇率、历史、Epic、IT、金价、油价、天气和摸鱼日报",
+      "发送资讯与实用信息，包括 60s 新闻、AI 快报、货币汇率、历史上的今天、Epic免费游戏、IT资讯、金价、油价、天气和摸鱼日报",
     tools: [
       {
         name: "send_report",
         description:
-          "发送一个 60s 报告到当前聊天。油价需要 region，天气需要 query，其余参数按类型选填。",
+          "发送一个报告到当前聊天。油价需要 region，天气需要 query，其余参数按类型选填。",
         parameters: {
           type: "object",
           properties: {
@@ -34,7 +34,8 @@ const sixtySecondsSkills: AISkill[] = [
             },
             date: {
               type: "string",
-              description: "查询日期，适用于 world_news、ai_news、history，格式 YYYY-MM-DD",
+              description:
+                "查询日期，适用于 world_news、ai_news、history，格式 YYYY-MM-DD",
             },
             currency: {
               type: "string",
@@ -64,7 +65,9 @@ const sixtySecondsSkills: AISkill[] = [
             return "60s 插件尚未初始化";
           }
 
-          const reportType = String(args?.report_type || "").trim() as SixtySecondsReportType;
+          const reportType = String(
+            args?.report_type || "",
+          ).trim() as SixtySecondsReportType;
           if (!reportType) {
             return "缺少 report_type";
           }

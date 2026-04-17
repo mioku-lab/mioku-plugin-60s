@@ -1,5 +1,10 @@
-import type { SixtySecondsClient } from "../../src/services/60s";
-import type { SixtySecondsBaseConfig, SixtySecondsRenderRequest, SixtySecondsRenderResult } from "./types";
+import type { SixtySecondsClient } from "../../../src/services/60s";
+import type {
+  SixtySecondsBaseConfig,
+  SixtySecondsRenderRequest,
+  SixtySecondsRenderResult,
+} from "../types";
+import { buildMoyuDailyHtml, buildWeatherAppHtml } from "./html-cards";
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
@@ -193,7 +198,9 @@ export async function renderSixtySecondsReport(options: {
           preferScreenshot: false,
         };
       }
-      const newsItems = Array.isArray(data?.news) ? (data.news as string[]) : [];
+      const newsItems = Array.isArray(data?.news)
+        ? (data.news as string[])
+        : [];
       const sections: string[] = [];
       sections.push(
         markdownBulleted(
@@ -208,7 +215,10 @@ export async function renderSixtySecondsReport(options: {
         ok: true,
         title: `60s 新闻 ${data?.date || ""}`.trim(),
         text: `60s 新闻 ${data?.date || ""}`.trim(),
-        markdown: buildMarkdownCard(`60s 新闻 ${data?.date || ""}`.trim(), sections),
+        markdown: buildMarkdownCard(
+          `60s 新闻 ${data?.date || ""}`.trim(),
+          sections,
+        ),
         preferScreenshot: true,
       };
     }
@@ -238,7 +248,9 @@ export async function renderSixtySecondsReport(options: {
       };
     }
     case "exchange_rate": {
-      const currency = normalizeCurrency(request.currency || config.defaults.exchangeCurrency);
+      const currency = normalizeCurrency(
+        request.currency || config.defaults.exchangeCurrency,
+      );
       if (!isValidCurrency(currency)) {
         return {
           ok: false,
@@ -291,20 +303,44 @@ export async function renderSixtySecondsReport(options: {
         ok: true,
         title,
         text: title,
-        markdown: buildMarkdownCard(title, [markdownNumbered("历史事件", items)]),
+        markdown: buildMarkdownCard(title, [
+          markdownNumbered("历史事件", items),
+        ]),
         preferScreenshot: true,
       };
     }
     case "epic_games": {
       const result = (await client.periodic.epicGames()) as any;
       const data = Array.isArray(result?.data) ? result.data : [];
-      const rows = limitItems(data, maxItems).map((item: any) => {
+      const limited = limitItems(data, maxItems);
+      const rows = limited.map((item: any) => {
         const status = item.is_free_now ? "免费领取中" : "当前未免费";
-        return [item.title || "-", item.original_price_desc || "-", status, item.free_end || "-"];
+        return [
+          item.title || "-",
+          item.original_price_desc || "-",
+          status,
+          item.free_end || "-",
+        ];
       });
-      const links = limitItems(data, maxItems).map(
-        (item: any) => `- **${item.title || "未命名游戏"}**：${item.link || "-"}`,
+      const links = limited.map(
+        (item: any) =>
+          `- **${item.title || "未命名游戏"}**：${item.link || "-"}`,
       );
+      const forwardNodes = limited.map((item: any) => {
+        const status = item.is_free_now ? "免费领取中" : "当前未免费";
+        const link = String(item.link || "").trim();
+        return {
+          title: item.title || "未命名游戏",
+          lines: [
+            `标题：${item.title || "未命名游戏"}`,
+            `原价：${item.original_price_desc || "-"}`,
+            `状态：${status}`,
+            `截止：${item.free_end || "-"}`,
+            "领取链接：",
+          ],
+          link: link || undefined,
+        };
+      });
       return {
         ok: true,
         title: "Epic 免费游戏",
@@ -313,6 +349,7 @@ export async function renderSixtySecondsReport(options: {
           markdownTable("游戏列表", ["名称", "原价", "状态", "截止"], rows),
           markdownSection("领取链接", links),
         ]),
+        forwardNodes,
         preferScreenshot: true,
       };
     }
@@ -329,25 +366,37 @@ export async function renderSixtySecondsReport(options: {
         ok: true,
         title: "实时 IT 资讯",
         text: "实时 IT 资讯",
-        markdown: buildMarkdownCard("实时 IT 资讯", [markdownNumbered("资讯列表", items)]),
+        markdown: buildMarkdownCard("实时 IT 资讯", [
+          markdownNumbered("资讯列表", items),
+        ]),
         preferScreenshot: true,
       };
     }
     case "gold_price": {
       const result = (await client.utility.goldPrice()) as any;
       const data = result?.data;
-      const metalRows = limitItems(data?.metals || [], Math.min(maxItems, 8)).map(
-        (item: any) => [item.name || "-", `${item.today_price ?? "-"}${item.unit || ""}`],
-      );
-      const storeRows = limitItems(data?.stores || [], Math.min(maxItems, 10)).map(
-        (item: any) => [`${item.brand || ""}${item.product || ""}`.trim() || "-", item.formatted || "-"],
-      );
+      const metalRows = limitItems(
+        data?.metals || [],
+        Math.min(maxItems, 8),
+      ).map((item: any) => [
+        item.name || "-",
+        `${item.today_price ?? "-"}${item.unit || ""}`,
+      ]);
+      const storeRows = limitItems(
+        data?.stores || [],
+        Math.min(maxItems, 10),
+      ).map((item: any) => [
+        `${item.brand || ""}${item.product || ""}`.trim() || "-",
+        item.formatted || "-",
+      ]);
       const sections = [
         markdownSection("基础信息", [`- **日期**：${data?.date || ""}`]),
         markdownTable("黄金品类", ["品类", "价格"], metalRows),
       ];
       if (storeRows.length > 0) {
-        sections.push(markdownTable("品牌金价", ["品牌/产品", "价格"], storeRows));
+        sections.push(
+          markdownTable("品牌金价", ["品牌/产品", "价格"], storeRows),
+        );
       }
       return {
         ok: true,
@@ -358,7 +407,9 @@ export async function renderSixtySecondsReport(options: {
       };
     }
     case "fuel_price": {
-      const region = String(request.region || config.defaults.fuelRegion || "").trim();
+      const region = String(
+        request.region || config.defaults.fuelRegion || "",
+      ).trim();
       if (!region) {
         return {
           ok: false,
@@ -376,7 +427,10 @@ export async function renderSixtySecondsReport(options: {
         item.name || "-",
         item.price_desc || "-",
       ]);
-      const lines = [`- **地区**：${data?.region || region}`, `- **更新时间**：${data?.updated || ""}`];
+      const lines = [
+        `- **地区**：${data?.region || region}`,
+        `- **更新时间**：${data?.updated || ""}`,
+      ];
       return {
         ok: true,
         title: "汽油价格",
@@ -389,7 +443,9 @@ export async function renderSixtySecondsReport(options: {
       };
     }
     case "weather": {
-      const query = String(request.query || config.defaults.weatherQuery || "").trim();
+      const query = String(
+        request.query || config.defaults.weatherQuery || "",
+      ).trim();
       if (!query) {
         return {
           ok: false,
@@ -426,6 +482,13 @@ export async function renderSixtySecondsReport(options: {
         ok: true,
         title: "实时天气",
         text: "实时天气",
+        html: buildWeatherAppHtml(data, query),
+        screenshotOptions: {
+          width: 760,
+          height: 630,
+          fullPage: true,
+          type: "png",
+        },
         markdown: buildMarkdownCard("实时天气", sections),
         preferScreenshot: true,
       };
@@ -452,9 +515,18 @@ export async function renderSixtySecondsReport(options: {
         ok: true,
         title: "摸鱼日报",
         text: "摸鱼日报",
+        html: buildMoyuDailyHtml(data),
+        screenshotOptions: {
+          width: 760,
+          height: 700,
+          fullPage: true,
+          type: "png",
+        },
         markdown: buildMarkdownCard("摸鱼日报", [
           markdownSection("日报内容", lines),
-          quoteLines.length > 0 ? markdownSection("摸鱼语录", [markdownQuote(quoteLines)]) : "",
+          quoteLines.length > 0
+            ? markdownSection("摸鱼语录", [markdownQuote(quoteLines)])
+            : "",
         ]),
         preferScreenshot: true,
       };

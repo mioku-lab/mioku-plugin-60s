@@ -1,4 +1,4 @@
-import type { SixtySecondsPluginRuntime } from "./runtime-core";
+import type { SixtySecondsPluginRuntime } from "./utils/runtime-core";
 import {
   getPluginRuntimeState,
   resetPluginRuntimeState,
@@ -14,7 +14,10 @@ const PLUGIN_NAME = "60s";
 export function setSixtySecondsRuntimeState(
   nextState: SixtySecondsRuntimeState,
 ): SixtySecondsRuntimeState {
-  return setPluginRuntimeState<SixtySecondsRuntimeState>(PLUGIN_NAME, nextState);
+  return setPluginRuntimeState<SixtySecondsRuntimeState>(
+    PLUGIN_NAME,
+    nextState,
+  );
 }
 
 export function getSixtySecondsRuntimeState(): SixtySecondsRuntimeState {

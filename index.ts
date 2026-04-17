@@ -4,8 +4,8 @@ import type { SixtySecondsService } from "../../src/services/60s";
 import type { ScreenshotService } from "../../src/services/screenshot/types";
 import { definePlugin, type MiokiContext } from "mioki";
 import { SIXTY_SECONDS_BASE_CONFIG } from "./configs/base";
-import { matchSixtySecondsCommand } from "./commands";
-import { SixtySecondsPluginRuntime } from "./runtime-core";
+import { matchSixtySecondsCommand } from "./utils/commands";
+import { SixtySecondsPluginRuntime } from "./utils/runtime-core";
 import {
   resetSixtySecondsRuntimeState,
   setSixtySecondsRuntimeState,
@@ -90,7 +90,10 @@ export default definePlugin({
       if (!rawText) {
         return;
       }
-      const stripResult = stripCommandPrefix(rawText, baseConfig.trigger.prefixes);
+      const stripResult = stripCommandPrefix(
+        rawText,
+        baseConfig.trigger.prefixes,
+      );
       let commandText = rawText;
       if (stripResult.hasPrefix) {
         commandText = stripResult.value || "60s";
@@ -104,7 +107,9 @@ export default definePlugin({
       runtime.updateServices({
         sixtySecondsService,
         aiService,
-        screenshotService: (ctx.services?.screenshot as ScreenshotService | undefined) || screenshotService,
+        screenshotService:
+          (ctx.services?.screenshot as ScreenshotService | undefined) ||
+          screenshotService,
       });
 
       await runtime.sendReport(ctx, event, {

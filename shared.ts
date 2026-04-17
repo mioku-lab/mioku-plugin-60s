@@ -1,2 +1,2 @@
-export { replyWithImage, replyWithParts } from "./messages";
-export { SixtySecondsPluginRuntime } from "./runtime-core";
+export { replyWithImage, replyWithParts } from "./utils/messages";
+export { SixtySecondsPluginRuntime } from "./utils/runtime-core";

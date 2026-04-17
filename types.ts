@@ -59,12 +59,29 @@ export interface SixtySecondsRenderRequest {
   limit?: number;
 }
 
+export interface SixtySecondsForwardNode {
+  title?: string;
+  lines: string[];
+  link?: string;
+}
+
+export interface SixtySecondsRenderScreenshotOptions {
+  width?: number;
+  height?: number;
+  fullPage?: boolean;
+  quality?: number;
+  type?: "png" | "jpeg" | "webp";
+}
+
 export interface SixtySecondsRenderResult {
   ok: boolean;
   title: string;
   text: string;
   markdown?: string;
+  html?: string;
   imageUrl?: string;
+  forwardNodes?: SixtySecondsForwardNode[];
+  screenshotOptions?: SixtySecondsRenderScreenshotOptions;
   preferScreenshot?: boolean;
   noticeInstruction?: string;
 }
