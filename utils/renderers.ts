@@ -327,18 +327,19 @@ export async function renderSixtySecondsReport(options: {
           `- **${item.title || "未命名游戏"}**：${item.link || "-"}`,
       );
       const forwardNodes = limited.map((item: any) => {
-        const status = item.is_free_now ? "免费领取中" : "当前未免费";
-        const link = String(item.link || "").trim();
         return {
           title: item.title || "未命名游戏",
           lines: [
-            `标题：${item.title || "未命名游戏"}`,
+            `发行厂商：${item.seller || "-"}`,
             `原价：${item.original_price_desc || "-"}`,
-            `状态：${status}`,
-            `截止：${item.free_end || "-"}`,
-            "领取链接：",
+            `现价：${item.is_free_now ? "免费" : "非免费"}`,
+            `免费开始：${item.free_start || "-"}`,
+            `免费截止：${item.free_end || "-"}`,
+            "",
+            `${item.description || "暂无描述"}`,
           ],
-          link: link || undefined,
+          link: item.link || undefined,
+          image: item.cover || undefined,
         };
       });
       return {

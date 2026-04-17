@@ -61,6 +61,7 @@ export async function replyWithForwardNodes(options: {
     title?: string;
     lines: string[];
     link?: string;
+    image?: string;
   }>;
 }): Promise<void> {
   const { ctx, event, nodes } = options;
@@ -80,39 +81,81 @@ export async function replyWithForwardNodes(options: {
   const nickname =
     String(ctx?.bot?.nickname || event?.sender?.card || event?.sender?.nickname || "60s资讯");
   const userId = String(selfId || ctx?.bot?.bot_id || event?.self_id || 0);
-  const forwardNodes = nodes.map((node) => {
-    const contentLines: string[] = [];
-    if (node.title) {
-      contentLines.push(`【${node.title}】`);
-    }
-    contentLines.push(...(node.lines || []));
-    if (node.link) {
-      contentLines.push(node.link);
-    }
-    return ctx.segment.node({
-      user_id: userId,
-      nickname,
-      content: contentLines.map((line) => ({
-        type: "text",
-        data: { text: String(line) },
-      })),
-    });
-  });
 
-  const forwardNodesFallback = nodes.map((node) => {
-    const contentLines: string[] = [];
+  const buildForwardNodes = (nodes: typeof options.nodes) => {
+    const result: any[] = [];
+    for (const node of nodes) {
+      if (node.image) {
+        result.push(
+          ctx.segment.node({
+            user_id: userId,
+            nickname,
+            content: [
+              {
+                type: "image",
+                data: { file: node.image },
+              },
+            ],
+          }),
+        );
+      }
+      const textParts: string[] = [];
+      if (node.title) {
+        textParts.push(node.title);
+      }
+      textParts.push(...(node.lines || []));
+      if (node.link) {
+        textParts.push(node.link);
+      }
+      if (textParts.length > 0) {
+        result.push(
+          ctx.segment.node({
+            user_id: userId,
+            nickname,
+            content: [
+              {
+                type: "text",
+                data: { text: textParts.join("\n") },
+              },
+            ],
+          }),
+        );
+      }
+    }
+    return result;
+  };
+
+  const forwardNodes = buildForwardNodes(nodes);
+
+  const forwardNodesFallback = nodes.flatMap((node) => {
+    const items: any[] = [];
+    if (node.image) {
+      items.push(
+        ctx.segment.node({
+          user_id: userId,
+          nickname,
+          content: [ctx.segment.image(node.image)],
+        }),
+      );
+    }
+    const textParts: string[] = [];
     if (node.title) {
-      contentLines.push(`【${node.title}】`);
+      textParts.push(node.title);
     }
-    contentLines.push(...(node.lines || []));
+    textParts.push(...(node.lines || []));
     if (node.link) {
-      contentLines.push(node.link);
+      textParts.push(node.link);
     }
-    return ctx.segment.node({
-      user_id: userId,
-      nickname,
-      content: contentLines.map((line) => ctx.segment.text(String(line))),
-    });
+    if (textParts.length > 0) {
+      items.push(
+        ctx.segment.node({
+          user_id: userId,
+          nickname,
+          content: [ctx.segment.text(textParts.join("\n"))],
+        }),
+      );
+    }
+    return items;
   });
 
   const sendForward = async (payload: any[]) => {

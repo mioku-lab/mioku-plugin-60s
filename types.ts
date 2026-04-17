@@ -63,6 +63,7 @@ export interface SixtySecondsForwardNode {
   title?: string;
   lines: string[];
   link?: string;
+  image?: string;
 }
 
 export interface SixtySecondsRenderScreenshotOptions {
