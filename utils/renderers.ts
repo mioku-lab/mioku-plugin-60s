@@ -456,10 +456,16 @@ export async function renderSixtySecondsReport(options: {
             "你在 60s 插件中负责天气查询。当前用户缺少地区信息。请自然提醒他补一个地区，例如 杭州 或 北京海淀。如果用户在这次或下一次回复中直接给出了地区，请直接调用工具查询并回复结果，不要继续引导他发送特定指令格式。",
         };
       }
-      const result = (await client.utility.weatherRealtime({
-        query: { query },
-      })) as any;
-      const data = result?.data;
+      const [realtimeResult, forecastResult] = await Promise.all([
+        client.utility.weatherRealtime({
+          query: { query },
+        }),
+        client.utility.weatherForecast({
+          query: { query },
+        }),
+      ]);
+      const data = (realtimeResult as any)?.data;
+      const forecastData = (forecastResult as any)?.data;
       const lines = [
         `- **地区**：${data?.location?.name || query}`,
         `- **天气**：**${data?.weather?.condition || ""}** ${data?.weather?.temperature ?? ""}°C`,
@@ -483,10 +489,10 @@ export async function renderSixtySecondsReport(options: {
         ok: true,
         title: "实时天气",
         text: "实时天气",
-        html: buildWeatherAppHtml(data, query),
+        html: buildWeatherAppHtml(data, query, forecastData),
         screenshotOptions: {
           width: 760,
-          height: 630,
+          height: 800,
           fullPage: true,
           type: "png",
         },

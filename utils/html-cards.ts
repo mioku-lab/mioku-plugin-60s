@@ -238,7 +238,11 @@ function pickAlertDangerPalette(
       };
 }
 
-export function buildWeatherAppHtml(data: any, query: string): string {
+export function buildWeatherAppHtml(
+  data: any,
+  query: string,
+  forecastData?: any,
+): string {
   const night = isNightNow();
   const location = escapeHtml(data?.location?.name || query || "未知地区");
   const conditionRaw = String(data?.weather?.condition || "未知");
@@ -269,6 +273,33 @@ export function buildWeatherAppHtml(data: any, query: string): string {
             return `<div class="alert-item"><h4>${title}</h4><p>${detail}</p></div>`;
           })
           .join("")}
+      </div>`
+      : "";
+
+  const hourlyForecasts = Array.isArray(forecastData?.hourly_forecast)
+    ? forecastData.hourly_forecast.slice(0, 8)
+    : [];
+  const forecastHtml =
+    hourlyForecasts.length > 0
+      ? `
+      <div class="glass forecast-glass">
+        <div class="section-title">天气预报</div>
+        <div class="hourly-forecast">
+          ${hourlyForecasts
+            .map((item: any) => {
+              const time = escapeHtml(item?.datetime?.split(" ")[1] || "--");
+              const temp = normalizeNumber(item?.temperature);
+              const cond = escapeHtml(item?.condition || "--");
+              const condEmoji = pickWeatherEmoji(String(item?.condition || ""));
+              return `
+              <div class="hourly-item">
+                <div class="hourly-time">${time}</div>
+                <div class="hourly-icon">${condEmoji}</div>
+                <div class="hourly-temp">${temp}°</div>
+              </div>`;
+            })
+            .join("")}
+        </div>
       </div>`
       : "";
 
@@ -394,6 +425,32 @@ export function buildWeatherAppHtml(data: any, query: string): string {
       line-height: 1.5;
       opacity: 0.96;
     }
+    .forecast-glass {
+      margin-top: 16px;
+    }
+    .hourly-forecast {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    .hourly-item {
+      text-align: center;
+      padding: 10px 6px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.1);
+    }
+    .hourly-time {
+      font-size: 14px;
+      opacity: 0.8;
+    }
+    .hourly-icon {
+      font-size: 24px;
+      margin: 4px 0;
+    }
+    .hourly-temp {
+      font-size: 18px;
+      font-weight: 600;
+    }
   </style>
   <div class="weather-app">
     <div class="content">
@@ -427,6 +484,7 @@ export function buildWeatherAppHtml(data: any, query: string): string {
         </div>
       </div>
       ${alertHtml}
+      ${forecastHtml}
     </div>
   </div>
   `;
