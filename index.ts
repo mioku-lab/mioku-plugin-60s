@@ -99,7 +99,9 @@ export default definePlugin({
         commandText = stripResult.value || "60s";
       }
 
-      const matched = matchSixtySecondsCommand(commandText);
+      const userNickname =
+        event.sender?.card || event.sender?.nickname || undefined;
+      const matched = matchSixtySecondsCommand(commandText, userNickname);
       if (!matched) {
         return;
       }

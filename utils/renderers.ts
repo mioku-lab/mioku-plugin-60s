@@ -546,5 +546,175 @@ export async function renderSixtySecondsReport(options: {
         noticeInstruction:
           "用户请求了 60s 插件暂不支持的类型。请简短说明当前支持 60s、it、金价、地区+油价、地区天气、摸鱼日报、epic、历史上的今天、ai。",
       };
+    case "whois": {
+      const domain = String(request.query || "").trim();
+      if (!domain) {
+        return {
+          ok: false,
+          title: "Whois 查询",
+          text: "缺少域名参数，请提供域名，例如 /whois example.com。",
+          noticeInstruction:
+            "你在 60s 插件中负责 Whois 查询。当前用户缺少域名信息。请自然提醒他补一个域名，例如 example.com。",
+        };
+      }
+      const result = (await client.utility.whois({
+        query: { domain },
+      })) as any;
+      const data = result?.data;
+      const lines = [
+        `- **域名**：${domain}`,
+        `- **注册商**：${data?.registrar || "-"}`,
+        `- **注册时间**：${data?.created || "-"}`,
+        `- **到期时间**：${data?.expires || "-"}`,
+        `- **DNS**：${data?.nameservers ? data.nameservers.join(", ") : "-"}`,
+      ];
+      if (data?.registrant?.name) {
+        lines.push(`- **注册人**：${data.registrant.name}`);
+      }
+      if (data?.registrant?.organization) {
+        lines.push(`- **组织**：${data.registrant.organization}`);
+      }
+      return {
+        ok: true,
+        title: "Whois 查询",
+        text: "Whois 查询结果",
+        markdown: buildMarkdownCard(`Whois: ${domain}`, [
+          markdownSection("查询结果", lines),
+        ]),
+        preferScreenshot: true,
+      };
+    }
+    case "hot_search": {
+      const [
+        douyinResult,
+        rednoteResult,
+        biliResult,
+        weiboResult,
+        baiduResult,
+        zhihuResult,
+      ] = await Promise.all([
+        client.hot.douyin(),
+        client.hot.rednote(),
+        client.hot.bili(),
+        client.hot.weibo(),
+        client.hot.baiduHot(),
+        client.hot.zhihu(),
+      ]);
+      const douyinData = ((douyinResult as any)?.data || []) as any[];
+      const rednoteData = ((rednoteResult as any)?.data || []) as any[];
+      const biliData = ((biliResult as any)?.data || []) as any[];
+      const weiboData = ((weiboResult as any)?.data || []) as any[];
+      const baiduData = ((baiduResult as any)?.data || []) as any[];
+      const zhihuData = ((zhihuResult as any)?.data || []) as any[];
+      const hotSearchData: {
+        douyin: Array<{ word: string; hot_value: string | number }>;
+        rednote: Array<{ word: string; hot_value: string | number }>;
+        bili: Array<{ word: string; hot_value: string | number }>;
+        weibo: Array<{ word: string; hot_value: string | number }>;
+        baidu: Array<{ word: string; hot_value: string | number }>;
+        zhihu: Array<{ word: string; hot_value: string | number }>;
+      } = {
+        douyin: douyinData
+          .slice(0, 10)
+          .map((item) => ({
+            word: item.title || "--",
+            hot_value: item.hot_value || "",
+          })),
+        rednote: rednoteData
+          .slice(0, 10)
+          .map((item) => ({
+            word: item.title || "--",
+            hot_value: item.score || "",
+          })),
+        bili: biliData
+          .slice(0, 10)
+          .map((item) => ({ word: item.title || "--", hot_value: "" })),
+        weibo: weiboData
+          .slice(0, 10)
+          .map((item) => ({
+            word: item.title || "--",
+            hot_value: item.hot_value || "",
+          })),
+        baidu: baiduData
+          .slice(0, 10)
+          .map((item) => ({
+            word: item.title || "--",
+            hot_value: item.score_desc || "",
+          })),
+        zhihu: zhihuData
+          .slice(0, 10)
+          .map((item) => ({
+            word: item.title || "--",
+            hot_value: item.熱度 || "",
+          })),
+      };
+      const { buildHotSearchHtml } = await import("./html-cards");
+      return {
+        ok: true,
+        title: "热搜",
+        text: "热搜榜单",
+        html: buildHotSearchHtml(hotSearchData),
+        screenshotOptions: {
+          width: 800,
+          height: 900,
+          type: "png",
+        },
+        markdown: buildMarkdownCard("热搜", []),
+        preferScreenshot: true,
+      };
+    }
+    case "hitokoto": {
+      try {
+        const response = await fetch("https://v1.hitokoto.cn/?c=i&c=j&c=h&c=k");
+        const hitokotoData = (await response.json()) as any;
+        const sentence = hitokotoData?.hitokoto || "获取一言失败";
+        return {
+          ok: true,
+          title: "一言",
+          text: sentence,
+        };
+      } catch {
+        return {
+          ok: false,
+          title: "一言",
+          text: "获取一言失败，请稍后重试",
+        };
+      }
+    }
+    case "kfc": {
+      const result = (await client.entertainment.randomKfcCopywriting()) as any;
+      const data = result?.data;
+      const copywriting =
+        data?.kfc || data?.copywriting || data || "获取 KFC 文案失败";
+      return {
+        ok: true,
+        title: "疯狂星期四",
+        text: String(copywriting),
+      };
+    }
+    case "answer_book": {
+      const result = (await client.entertainment.answerBook({
+        query: request.query ? { question: request.query } : undefined,
+      })) as any;
+      const data = result?.data;
+      const answer = data?.answer || data || "获取答案失败";
+      return {
+        ok: true,
+        title: "答案之书",
+        text: String(answer),
+      };
+    }
+    case "sickness_essay": {
+      const result = (await client.entertainment.randomSicknessEssay({
+        query: request.query ? { name: request.query } : undefined,
+      })) as any;
+      const data = result?.data;
+      const essay = data?.saying || data?.essay || data || "获取发病文学失败";
+      return {
+        ok: true,
+        title: "发病文学",
+        text: String(essay),
+      };
+    }
   }
 }

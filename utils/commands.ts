@@ -26,6 +26,7 @@ function extractRegionBySuffix(input: string, suffix: string): string | null {
 
 export function matchSixtySecondsCommand(
   input: string,
+  userNickname?: string,
 ): MatchedSixtySecondsCommand | null {
   const raw = normalizeText(input);
   if (!raw) {
@@ -99,6 +100,69 @@ export function matchSixtySecondsCommand(
       reportType: "weather",
       requestOverrides: {
         query: weatherRegion || undefined,
+      },
+    };
+  }
+
+  if (normalized === "热搜") {
+    return {
+      reportType: "hot_search",
+      requestOverrides: {},
+    };
+  }
+
+  if (normalized === "一言") {
+    return {
+      reportType: "hitokoto",
+      requestOverrides: {},
+    };
+  }
+
+  if (normalized === "疯狂星期四" || normalized === "kfc") {
+    return {
+      reportType: "kfc",
+      requestOverrides: {},
+    };
+  }
+
+  if (normalized.startsWith("答案之书")) {
+    const query = normalized.slice(4).trim();
+    return {
+      reportType: "answer_book",
+      requestOverrides: {
+        query: query || undefined,
+      },
+    };
+  }
+
+  if (normalized.startsWith("发病")) {
+    const atMatch = raw.match(/@(\S+)/);
+    let name = "";
+    if (atMatch) {
+      name = atMatch[1];
+    } else {
+      const afterKeyword = normalized.slice(2).trim();
+      if (afterKeyword) {
+        name = afterKeyword;
+      }
+    }
+    if (!name && userNickname) {
+      name = userNickname;
+    }
+    return {
+      reportType: "sickness_essay",
+      requestOverrides: {
+        query: name || undefined,
+      },
+    };
+  }
+
+  if (normalized.startsWith("/whois")) {
+    const domain = normalized.slice(6).trim();
+    return {
+      reportType: "whois",
+      requestOverrides: {
+        query: domain || undefined,
       },
     };
   }

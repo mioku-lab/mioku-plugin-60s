@@ -1,6 +1,6 @@
 {
   "name": "mioku-plugin-60s",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "基于 mioku-60s-service 的资讯与实用信息插件",
   "main": "index.ts",
   "mioku": {
@@ -57,6 +57,36 @@
         {
           "cmd": "ai",
           "desc": "获取 AI 资讯快报",
+          "role": "member"
+        },
+        {
+          "cmd": "/whois <域名>",
+          "desc": "查询域名 Whois 信息，如：/whois example.com",
+          "role": "member"
+        },
+        {
+          "cmd": "热搜",
+          "desc": "获取微博、抖音、百度等热搜榜单",
+          "role": "member"
+        },
+        {
+          "cmd": "一言",
+          "desc": "随机获取一句名言",
+          "role": "member"
+        },
+        {
+          "cmd": "疯狂星期四",
+          "desc": "获取 KFC 疯狂星期四文案",
+          "role": "member"
+        },
+        {
+          "cmd": "答案之书",
+          "desc": "随机获取答案，如：答案之书 我应该吃什么",
+          "role": "member"
+        },
+        {
+          "cmd": "发病",
+          "desc": "生成发病文学",
           "role": "member"
         }
       ]

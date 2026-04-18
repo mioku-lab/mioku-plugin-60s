@@ -6,19 +6,19 @@ const sixtySecondsSkills: AISkill[] = [
   {
     name: "sixty_seconds",
     description:
-      "发送资讯与实用信息，包括 60s 新闻、AI 快报、货币汇率、历史上的今天、Epic免费游戏、IT资讯、金价、油价、天气和摸鱼日报",
+      "发送资讯与实用信息，包括 60s 新闻、AI 快报、货币汇率、历史上的今天、Epic免费游戏、IT资讯、金价、油价、天气、摸鱼日报、Whois查询、热搜榜单",
     tools: [
       {
         name: "send_report",
         description:
-          "发送一个报告到当前聊天。油价需要 region，天气需要 query，其余参数按类型选填。",
+          "发送一个报告到当前聊天。油价需要 region，天气需要 query，其余参数按类型选填。热搜和Whois需要 query 参数。",
         parameters: {
           type: "object",
           properties: {
             report_type: {
               type: "string",
               description:
-                "报告类型，可选 world_news、ai_news、exchange_rate、history、epic_games、it_news、gold_price、fuel_price、weather、moyu_daily",
+                "报告类型，可选 world_news、ai_news、exchange_rate、history、epic_games、it_news、gold_price、fuel_price、weather、moyu_daily、hot_search、whois",
               enum: [
                 "world_news",
                 "ai_news",
@@ -30,6 +30,8 @@ const sixtySecondsSkills: AISkill[] = [
                 "fuel_price",
                 "weather",
                 "moyu_daily",
+                "hot_search",
+                "whois",
               ],
             },
             date: {
@@ -47,7 +49,7 @@ const sixtySecondsSkills: AISkill[] = [
             },
             query: {
               type: "string",
-              description: "天气查询地区，例如 杭州、北京海淀",
+              description: "天气查询地区/热搜/Whois查询域名，例如 杭州、北京海淀、example.com",
             },
             limit: {
               type: "number",

@@ -885,3 +885,210 @@ export function buildMoyuDailyHtml(data: any): string {
   </div>
   `;
 }
+
+export function buildHotSearchHtml(data: {
+  douyin: Array<{ word?: string; hot_value?: string | number }>;
+  rednote: Array<{ word?: string; hot_value?: string | number }>;
+  bili: Array<{ word?: string; hot_value?: string | number }>;
+  weibo: Array<{ word?: string; hot_value?: string | number }>;
+  baidu: Array<{ word?: string; hot_value?: string | number }>;
+  zhihu: Array<{ word?: string; hot_value?: string | number }>;
+}): string {
+  const night = isNightNow();
+  const accent = night ? "#22d3ee" : "#0891b2";
+  const accentWeak = night ? "rgba(34, 211, 238, 0.7)" : "rgba(8, 145, 178, 0.6)";
+  const pageBg = night
+    ? "linear-gradient(165deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)"
+    : "linear-gradient(165deg, #ecfeff 0%, #e0f2fe 40%, #f0fdfa 100%)";
+  const textColor = night ? "#ffffff" : "#0f172a";
+  const textMuted = night ? "rgba(255,255,255,0.75)" : "rgba(15, 23, 42, 0.55)";
+  const cardBg = night ? "rgba(30, 41, 59, 0.7)" : "rgba(255, 255, 255, 0.8)";
+  const cardBorder = night ? "rgba(34, 211, 238, 0.15)" : "rgba(8, 145, 178, 0.2)";
+  const shellBg = night ? "rgba(15, 23, 42, 0.85)" : "rgba(255, 255, 255, 0.9)";
+  const shellBorder = night ? "rgba(34, 211, 238, 0.2)" : "rgba(8, 145, 178, 0.25)";
+  const itemBg = night ? "rgba(30, 41, 59, 0.5)" : "rgba(255, 255, 255, 0.6)";
+  const itemBorder = night ? "rgba(34, 211, 238, 0.1)" : "rgba(8, 145, 178, 0.15)";
+
+  function truncateText(text: string, maxLen: number): string {
+    if (text.length <= maxLen) return text;
+    return text.slice(0, maxLen) + "...";
+  }
+
+  function buildPlatformCard(
+    platform: string,
+    icon: string,
+    items: Array<{ word?: string; hot_value?: string | number }>,
+  ) {
+    const listItems = items.slice(0, 10).map((item, index) => {
+      const title = truncateText(item.word || "--", 20);
+      const hot = item.hot_value || "";
+      const rank = index + 1;
+      const isHot = rank <= 3;
+      return `
+        <div class="item-row">
+          <span class="rank ${isHot ? "rank-hot" : ""}">${rank}</span>
+          <span class="title">${escapeHtml(title)}</span>
+          ${hot ? `<span class="hot-value">${escapeHtml(String(hot))}</span>` : ""}
+        </div>`;
+    }).join("");
+
+    return `
+      <div class="platform-card">
+        <div class="platform-header">
+          <span class="platform-icon">${icon}</span>
+          <span class="platform-name">${platform}</span>
+        </div>
+        <div class="platform-list">${listItems}</div>
+      </div>`;
+  }
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html {
+      width: 100%;
+      min-height: 100vh;
+      background: ${pageBg};
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: ${textColor};
+      line-height: 1.4;
+      padding: 32px 20px;
+      min-height: 100vh;
+    }
+    .hot-app {
+      width: 100%;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .main-card {
+      background: ${shellBg};
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid ${shellBorder};
+      border-radius: 32px;
+      padding: 28px 24px;
+      box-shadow: 0 12px 40px ${night ? "rgba(0,0,0,0.3)" : "rgba(0,0,0,0.1)"};
+    }
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 24px;
+    }
+    .header-icon {
+      font-size: 26px;
+    }
+    .header-title {
+      font-size: 24px;
+      font-weight: 700;
+      color: ${accent};
+      letter-spacing: 0.05em;
+    }
+    .platform-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 540px) {
+      .platform-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    .platform-card {
+      background: ${cardBg};
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid ${cardBorder};
+      border-radius: 20px;
+      padding: 16px 16px;
+      min-width: 0;
+    }
+    .platform-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid ${cardBorder};
+    }
+    .platform-icon {
+      font-size: 18px;
+    }
+    .platform-name {
+      font-size: 15px;
+      font-weight: 600;
+      color: ${accent};
+    }
+    .platform-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .item-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      background: ${itemBg};
+      border: 1px solid ${itemBorder};
+      border-radius: 10px;
+      min-width: 0;
+    }
+    .rank {
+      font-size: 12px;
+      font-weight: 700;
+      width: 18px;
+      text-align: center;
+      color: ${textMuted};
+      flex-shrink: 0;
+    }
+    .rank-hot {
+      color: #ef4444;
+    }
+    .title {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 500;
+      color: ${textColor};
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+    }
+    .hot-value {
+      font-size: 11px;
+      font-weight: 600;
+      color: ${accentWeak};
+      white-space: nowrap;
+      flex-shrink: 0;
+      max-width: 60px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  </style>
+  <div class="hot-app">
+    <div class="main-card">
+      <div class="header-row">
+        <span class="header-icon">🔥</span>
+        <span class="header-title">热搜榜单</span>
+      </div>
+      <div class="platform-grid">
+        ${buildPlatformCard("抖音", "📱", data.douyin || [])}
+        ${buildPlatformCard("小红书", "📔", data.rednote || [])}
+        ${buildPlatformCard("哔哩哔哩", "📺", data.bili || [])}
+        ${buildPlatformCard("微博", "💬", data.weibo || [])}
+        ${buildPlatformCard("百度", "🔍", data.baidu || [])}
+        ${buildPlatformCard("知乎", "💭", data.zhihu || [])}
+      </div>
+    </div>
+  </div>
+</body>
+</html>`;
+}

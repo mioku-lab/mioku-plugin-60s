@@ -42,7 +42,13 @@ export type SixtySecondsReportType =
   | "gold_price"
   | "fuel_price"
   | "weather"
-  | "moyu_daily";
+  | "moyu_daily"
+  | "hot_search"
+  | "whois"
+  | "hitokoto"
+  | "kfc"
+  | "answer_book"
+  | "sickness_essay";
 
 export interface SixtySecondsPluginServices {
   sixtySecondsService?: SixtySecondsService;
