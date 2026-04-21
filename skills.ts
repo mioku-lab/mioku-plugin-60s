@@ -34,11 +34,6 @@ const sixtySecondsSkills: AISkill[] = [
                 "whois",
               ],
             },
-            date: {
-              type: "string",
-              description:
-                "查询日期，适用于 world_news、ai_news、history，格式 YYYY-MM-DD",
-            },
             currency: {
               type: "string",
               description: "汇率基准货币代码，例如 USD、CNY、EUR",
@@ -50,10 +45,6 @@ const sixtySecondsSkills: AISkill[] = [
             query: {
               type: "string",
               description: "天气查询地区/热搜/Whois查询域名，例如 杭州、北京海淀、example.com",
-            },
-            limit: {
-              type: "number",
-              description: "IT 资讯条数，1 到 50",
             },
           },
           required: ["report_type"],
@@ -90,7 +81,10 @@ const sixtySecondsSkills: AISkill[] = [
                 : undefined,
           });
 
-          return result.ok ? `已发送${result.title}` : result.text;
+          const content = result.markdown || result.text;
+          return result.ok
+            ? `已发送${result.title}。以下是报告的主要内容，知晓即可，不需要再向用户重复：\n${content}`
+            : result.text;
         },
       } as AITool,
     ],
