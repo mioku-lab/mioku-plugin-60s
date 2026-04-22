@@ -7,6 +7,7 @@ const sixtySecondsSkills: AISkill[] = [
     name: "sixty_seconds",
     description:
       "发送资讯与实用信息，包括 60s 新闻、AI 快报、货币汇率、历史上的今天、Epic免费游戏、IT资讯、金价、油价、天气、摸鱼日报、Whois查询、热搜榜单",
+    permission: "member",
     tools: [
       {
         name: "send_report",
