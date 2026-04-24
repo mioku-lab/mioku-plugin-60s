@@ -15,6 +15,90 @@ function normalizeNumber(value: unknown, fallback: string = "--"): string {
   return String(value);
 }
 
+function parseRgbFromColor(
+  color: string,
+): { r: number; g: number; b: number } | null {
+  const value = String(color || "").trim();
+  if (!value) return null;
+
+  const hexMatch = value.match(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/);
+  if (hexMatch) {
+    const hex = hexMatch[1];
+    if (hex.length === 3) {
+      const r = parseInt(hex[0] + hex[0], 16);
+      const g = parseInt(hex[1] + hex[1], 16);
+      const b = parseInt(hex[2] + hex[2], 16);
+      return { r, g, b };
+    }
+    const r = parseInt(hex.slice(0, 2), 16);
+    const g = parseInt(hex.slice(2, 4), 16);
+    const b = parseInt(hex.slice(4, 6), 16);
+    return { r, g, b };
+  }
+
+  const rgbMatch = value.match(
+    /^rgba?\(\s*([0-9.]+)\s*,\s*([0-9.]+)\s*,\s*([0-9.]+)/i,
+  );
+  if (rgbMatch) {
+    return {
+      r: Number(rgbMatch[1]),
+      g: Number(rgbMatch[2]),
+      b: Number(rgbMatch[3]),
+    };
+  }
+
+  return null;
+}
+
+function relativeLuminance(r: number, g: number, b: number): number {
+  const toLinear = (channel: number): number => {
+    const c = Math.max(0, Math.min(255, channel)) / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  };
+  const rl = toLinear(r);
+  const gl = toLinear(g);
+  const bl = toLinear(b);
+  return 0.2126 * rl + 0.7152 * gl + 0.0722 * bl;
+}
+
+function contrastRatio(l1: number, l2: number): number {
+  const lighter = Math.max(l1, l2);
+  const darker = Math.min(l1, l2);
+  return (lighter + 0.05) / (darker + 0.05);
+}
+
+function pickAutoTextColor(
+  colors: string[],
+  isNight: boolean,
+): { text: string; weak: string } {
+  const luminances = colors
+    .map((color) => parseRgbFromColor(color))
+    .filter((rgb): rgb is { r: number; g: number; b: number } => Boolean(rgb))
+    .map((rgb) => relativeLuminance(rgb.r, rgb.g, rgb.b));
+
+  if (luminances.length === 0) {
+    return isNight
+      ? { text: "#ffffff", weak: "rgba(255,255,255,0.75)" }
+      : { text: "#0f172a", weak: "rgba(15,23,42,0.72)" };
+  }
+
+  const avgLuminance =
+    luminances.reduce((sum, item) => sum + item, 0) / luminances.length;
+  const effectiveLuminance = isNight
+    ? avgLuminance * 0.68
+    : (avgLuminance * (1 - 0.22) + 0.22) * (1 - 0.2) + 0.2;
+
+  const darkTextLum = relativeLuminance(15, 23, 42); // #0f172a
+  const whiteTextLum = 1;
+  const darkContrast = contrastRatio(effectiveLuminance, darkTextLum);
+  const whiteContrast = contrastRatio(effectiveLuminance, whiteTextLum);
+  const useDarkText = darkContrast >= whiteContrast;
+
+  return useDarkText
+    ? { text: "#0f172a", weak: "rgba(15,23,42,0.72)" }
+    : { text: "#ffffff", weak: "rgba(255,255,255,0.82)" };
+}
+
 function isNightNow(): boolean {
   const hour = new Date().getHours();
   return hour < 6 || hour >= 18;
@@ -310,12 +394,16 @@ export function buildWeatherAppHtml(
         : "#3a7bc8";
 
   const pageBg = `linear-gradient(165deg, ${bgColor1} 0%, ${bgColor2} 50%, ${bgColor3} 100%)`;
-  const textColor = night ? "#ffffff" : "#ffffff";
-  const weakTextColor = night
-    ? "rgba(255,255,255,0.75)"
-    : "rgba(255,255,255,0.85)";
+  const autoText = pickAutoTextColor([bgColor1, bgColor2, bgColor3], night);
+  const textColor = autoText.text;
+  const weakTextColor = autoText.weak;
+  const useDarkText = textColor === "#0f172a";
   const cardBg = night ? "rgba(0,0,0,0.25)" : "rgba(255,255,255,0.2)";
-  const cardBorder = night ? "rgba(255,255,255,0.15)" : "rgba(255,255,255,0.3)";
+  const cardBorder = useDarkText
+    ? "rgba(15,23,42,0.18)"
+    : night
+      ? "rgba(255,255,255,0.15)"
+      : "rgba(255,255,255,0.3)";
   const cardShadow = night
     ? "0 12px 40px rgba(0,0,0,0.3)"
     : "0 12px 40px rgba(0,0,0,0.15)";
@@ -896,18 +984,26 @@ export function buildHotSearchHtml(data: {
 }): string {
   const night = isNightNow();
   const accent = night ? "#22d3ee" : "#0891b2";
-  const accentWeak = night ? "rgba(34, 211, 238, 0.7)" : "rgba(8, 145, 178, 0.6)";
+  const accentWeak = night
+    ? "rgba(34, 211, 238, 0.7)"
+    : "rgba(8, 145, 178, 0.6)";
   const pageBg = night
     ? "linear-gradient(165deg, #0f172a 0%, #1e293b 50%, #0f172a 100%)"
     : "linear-gradient(165deg, #ecfeff 0%, #e0f2fe 40%, #f0fdfa 100%)";
   const textColor = night ? "#ffffff" : "#0f172a";
   const textMuted = night ? "rgba(255,255,255,0.75)" : "rgba(15, 23, 42, 0.55)";
   const cardBg = night ? "rgba(30, 41, 59, 0.7)" : "rgba(255, 255, 255, 0.8)";
-  const cardBorder = night ? "rgba(34, 211, 238, 0.15)" : "rgba(8, 145, 178, 0.2)";
+  const cardBorder = night
+    ? "rgba(34, 211, 238, 0.15)"
+    : "rgba(8, 145, 178, 0.2)";
   const shellBg = night ? "rgba(15, 23, 42, 0.85)" : "rgba(255, 255, 255, 0.9)";
-  const shellBorder = night ? "rgba(34, 211, 238, 0.2)" : "rgba(8, 145, 178, 0.25)";
+  const shellBorder = night
+    ? "rgba(34, 211, 238, 0.2)"
+    : "rgba(8, 145, 178, 0.25)";
   const itemBg = night ? "rgba(30, 41, 59, 0.5)" : "rgba(255, 255, 255, 0.6)";
-  const itemBorder = night ? "rgba(34, 211, 238, 0.1)" : "rgba(8, 145, 178, 0.15)";
+  const itemBorder = night
+    ? "rgba(34, 211, 238, 0.1)"
+    : "rgba(8, 145, 178, 0.15)";
 
   function truncateText(text: string, maxLen: number): string {
     if (text.length <= maxLen) return text;
@@ -919,18 +1015,21 @@ export function buildHotSearchHtml(data: {
     icon: string,
     items: Array<{ word?: string; hot_value?: string | number }>,
   ) {
-    const listItems = items.slice(0, 10).map((item, index) => {
-      const title = truncateText(item.word || "--", 20);
-      const hot = item.hot_value || "";
-      const rank = index + 1;
-      const isHot = rank <= 3;
-      return `
+    const listItems = items
+      .slice(0, 10)
+      .map((item, index) => {
+        const title = truncateText(item.word || "--", 20);
+        const hot = item.hot_value || "";
+        const rank = index + 1;
+        const isHot = rank <= 3;
+        return `
         <div class="item-row">
           <span class="rank ${isHot ? "rank-hot" : ""}">${rank}</span>
           <span class="title">${escapeHtml(title)}</span>
           ${hot ? `<span class="hot-value">${escapeHtml(String(hot))}</span>` : ""}
         </div>`;
-    }).join("");
+      })
+      .join("");
 
     return `
       <div class="platform-card">
