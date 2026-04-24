@@ -82,17 +82,21 @@ function pickAutoTextColor(
       : { text: "#0f172a", weak: "rgba(15,23,42,0.72)" };
   }
 
-  const avgLuminance =
-    luminances.reduce((sum, item) => sum + item, 0) / luminances.length;
-  const effectiveLuminance = isNight
-    ? avgLuminance * 0.68
-    : (avgLuminance * (1 - 0.22) + 0.22) * (1 - 0.2) + 0.2;
+  const surfaceLuminances = luminances.map((lum) =>
+    isNight ? lum * (1 - 0.25) : lum * (1 - 0.2) + 0.2,
+  );
 
   const darkTextLum = relativeLuminance(15, 23, 42); // #0f172a
   const whiteTextLum = 1;
-  const darkContrast = contrastRatio(effectiveLuminance, darkTextLum);
-  const whiteContrast = contrastRatio(effectiveLuminance, whiteTextLum);
-  const useDarkText = darkContrast >= whiteContrast;
+  const darkContrast = Math.min(
+    ...surfaceLuminances.map((lum) => contrastRatio(lum, darkTextLum)),
+  );
+  const whiteContrast = Math.min(
+    ...surfaceLuminances.map((lum) => contrastRatio(lum, whiteTextLum)),
+  );
+  const useDarkText = isNight
+    ? whiteContrast < 3.2 && darkContrast > whiteContrast + 0.6
+    : darkContrast >= whiteContrast;
 
   return useDarkText
     ? { text: "#0f172a", weak: "rgba(15,23,42,0.72)" }
