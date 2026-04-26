@@ -433,87 +433,75 @@ export function buildWeatherAppHtml(
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "PingFang SC", "Microsoft YaHei", sans-serif;
       color: ${textColor};
       line-height: 1.4;
-      padding: 32px 24px;
+      padding: 16px;
       min-height: 100vh;
     }
     .weather-app {
       width: 100%;
-      max-width: 420px;
       margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
     }
-    .main-card {
-      background: ${cardBg};
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid ${cardBorder};
-      border-radius: 32px;
-      padding: 28px 24px;
-      box-shadow: ${cardShadow};
+    .weather-hero {
+      width: 100%;
+      padding: 44px 24px 28px;
     }
-    .location-row {
+    .weather-hero-top {
       display: flex;
       align-items: center;
-      gap: 8px;
-      margin-bottom: 4px;
-    }
-    .location-icon {
-      font-size: 20px;
+      justify-content: space-between;
     }
     .location {
       font-size: 22px;
       font-weight: 600;
       letter-spacing: 0.3px;
     }
-    .current-weather {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      margin-top: 16px;
-      gap: 16px;
-    }
-    .temp-block {
-      flex: 1;
-    }
-    .temp {
-      font-size: 80px;
-      font-weight: 200;
-      line-height: 1;
-      letter-spacing: -3px;
-    }
-    .temp-unit {
-      font-size: 36px;
-      font-weight: 300;
-      vertical-align: super;
-    }
-    .condition {
-      font-size: 18px;
-      margin-top: 6px;
-      opacity: 0.9;
-    }
-    .condition-text {
-      font-weight: 500;
-    }
     .icon-block {
-      width: 100px;
-      height: 100px;
+      width: 80px;
+      height: 80px;
+      flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: center;
     }
     .weather-icon-img {
-      width: 100%;
-      height: 100%;
+      width: 80px;
+      height: 80px;
       object-fit: contain;
     }
-    .update-time {
-      font-size: 13px;
-      margin-top: 12px;
-      opacity: 0.7;
+    .weather-hero-body {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      margin-top: 20px;
     }
-    .divider {
-      height: 1px;
-      background: ${cardBorder};
-      margin: 20px 0;
+    .temp-block {
+      flex: 1;
+    }
+    .temp {
+      font-size: 72px;
+      font-weight: 200;
+      line-height: 1;
+      letter-spacing: -3px;
+    }
+    .temp-unit {
+      font-size: 32px;
+      font-weight: 300;
+      vertical-align: super;
+    }
+    .condition {
+      font-size: 18px;
+      margin-top: 4px;
+      opacity: 0.9;
+    }
+    .condition-text {
+      font-weight: 500;
+    }
+    .update-time {
+      font-size: 12px;
+      opacity: 0.6;
+      text-align: right;
     }
     .metrics-grid {
       display: grid;
@@ -570,7 +558,7 @@ export function buildWeatherAppHtml(
       font-weight: 500;
     }
     .forecast-section {
-      margin-top: 20px;
+      margin-top: 0;
     }
     .forecast-title {
       font-size: 15px;
@@ -651,28 +639,27 @@ export function buildWeatherAppHtml(
     }
   </style>
   <div class="weather-app">
-    <div class="main-card">
-      <div class="location-row">
-        <span class="location">${location}</span>
-      </div>
-      <div class="current-weather">
-        <div class="temp-block">
-          <div class="temp">${temperature}<span class="temp-unit">°</span></div>
-          <div class="condition">
-            <span class="condition-text">${condition}</span>
+      <div class="weather-hero">
+        <div class="weather-hero-top">
+          <span class="location">${location}</span>
+          <div class="icon-block">
+            ${
+              weatherIcon
+                ? `<img class="weather-icon-img" src="${weatherIcon}" alt="${condition}" onerror="this.style.display='none'">`
+                : ""
+            }
           </div>
-          <div class="update-time">更新于 ${updated}</div>
         </div>
-        <div class="icon-block">
-          ${
-            weatherIcon
-              ? `<img class="weather-icon-img" src="${weatherIcon}" alt="${condition}" onerror="this.style.display='none'">`
-              : ""
-          }
+        <div class="weather-hero-body">
+          <div class="temp-block">
+            <div class="temp">${temperature}<span class="temp-unit">°</span></div>
+            <div class="condition">
+              <span class="condition-text">${condition}</span>
+            </div>
+          </div>
+          <span class="update-time">更新于 ${updated}</span>
         </div>
       </div>
-
-      <div class="divider"></div>
 
       <div class="metrics-grid">
         <div class="metric-card">
@@ -779,7 +766,6 @@ export function buildWeatherAppHtml(
           : ""
       }
     </div>
-  </div>
   `;
 }
 

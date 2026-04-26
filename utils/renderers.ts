@@ -491,7 +491,7 @@ export async function renderSixtySecondsReport(options: {
         text: "实时天气",
         html: buildWeatherAppHtml(data, query, forecastData),
         screenshotOptions: {
-          width: 500,
+          width: 420,
           height: 600,
           fullPage: true,
           type: "png",
