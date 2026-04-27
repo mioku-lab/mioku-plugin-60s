@@ -492,7 +492,7 @@ export async function renderSixtySecondsReport(options: {
         html: buildWeatherAppHtml(data, query, forecastData),
         screenshotOptions: {
           width: 420,
-          height: 600,
+          height: 520,
           fullPage: true,
           type: "png",
         },
@@ -614,39 +614,29 @@ export async function renderSixtySecondsReport(options: {
         baidu: Array<{ word: string; hot_value: string | number }>;
         zhihu: Array<{ word: string; hot_value: string | number }>;
       } = {
-        douyin: douyinData
-          .slice(0, 10)
-          .map((item) => ({
-            word: item.title || "--",
-            hot_value: item.hot_value || "",
-          })),
-        rednote: rednoteData
-          .slice(0, 10)
-          .map((item) => ({
-            word: item.title || "--",
-            hot_value: item.score || "",
-          })),
+        douyin: douyinData.slice(0, 10).map((item) => ({
+          word: item.title || "--",
+          hot_value: item.hot_value || "",
+        })),
+        rednote: rednoteData.slice(0, 10).map((item) => ({
+          word: item.title || "--",
+          hot_value: item.score || "",
+        })),
         bili: biliData
           .slice(0, 10)
           .map((item) => ({ word: item.title || "--", hot_value: "" })),
-        weibo: weiboData
-          .slice(0, 10)
-          .map((item) => ({
-            word: item.title || "--",
-            hot_value: item.hot_value || "",
-          })),
-        baidu: baiduData
-          .slice(0, 10)
-          .map((item) => ({
-            word: item.title || "--",
-            hot_value: item.score_desc || "",
-          })),
-        zhihu: zhihuData
-          .slice(0, 10)
-          .map((item) => ({
-            word: item.title || "--",
-            hot_value: item.熱度 || "",
-          })),
+        weibo: weiboData.slice(0, 10).map((item) => ({
+          word: item.title || "--",
+          hot_value: item.hot_value || "",
+        })),
+        baidu: baiduData.slice(0, 10).map((item) => ({
+          word: item.title || "--",
+          hot_value: item.score_desc || "",
+        })),
+        zhihu: zhihuData.slice(0, 10).map((item) => ({
+          word: item.title || "--",
+          hot_value: item.熱度 || "",
+        })),
       };
       const { buildHotSearchHtml } = await import("./html-cards");
       return {

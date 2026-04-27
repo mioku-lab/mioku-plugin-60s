@@ -441,67 +441,77 @@ export function buildWeatherAppHtml(
       margin: 0 auto;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 8px;
     }
     .weather-hero {
       width: 100%;
-      padding: 44px 24px 28px;
+      padding: 12px 28px 6px;
     }
-    .weather-hero-top {
+    .weather-hero-header {
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: space-between;
+      padding-top: 6px;
     }
     .location {
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 600;
       letter-spacing: 0.3px;
-    }
-    .icon-block {
-      width: 80px;
-      height: 80px;
-      flex-shrink: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .weather-icon-img {
-      width: 80px;
-      height: 80px;
-      object-fit: contain;
-    }
-    .weather-hero-body {
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
-      margin-top: 20px;
-    }
-    .temp-block {
-      flex: 1;
-    }
-    .temp {
-      font-size: 72px;
-      font-weight: 200;
-      line-height: 1;
-      letter-spacing: -3px;
-    }
-    .temp-unit {
-      font-size: 32px;
-      font-weight: 300;
-      vertical-align: super;
-    }
-    .condition {
-      font-size: 18px;
-      margin-top: 4px;
-      opacity: 0.9;
-    }
-    .condition-text {
-      font-weight: 500;
     }
     .update-time {
       font-size: 12px;
       opacity: 0.6;
-      text-align: right;
+      margin-top: 4px;
+    }
+    .weather-hero-main {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 12px;
+    }
+    .icon-block {
+      width: 104px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-left: 16px;
+    }
+    .weather-icon-img {
+      width: 88px;
+      height: 88px;
+      object-fit: contain;
+    }
+    .icon-condition {
+      font-size: 16px;
+      opacity: 0.92;
+      margin-top: 2px;
+      text-align: center;
+    }
+    .icon-condition-text {
+      font-weight: 500;
+    }
+    .temp-block {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      min-height: 104px;
+      padding-top: 0;
+    }
+    .temp {
+      font-size: 88px;
+      font-weight: 300;
+      line-height: 1;
+      letter-spacing: -4px;
+      font-family: "SF Pro Rounded", "SF Pro Display", "Avenir Next", "Helvetica Neue", -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-variant-numeric: tabular-nums;
+    }
+    .temp-unit {
+      font-size: 34px;
+      font-weight: 300;
+      vertical-align: super;
     }
     .metrics-grid {
       display: grid;
@@ -640,24 +650,24 @@ export function buildWeatherAppHtml(
   </style>
   <div class="weather-app">
       <div class="weather-hero">
-        <div class="weather-hero-top">
+        <div class="weather-hero-header">
           <span class="location">${location}</span>
+          <span class="update-time">更新于 ${updated}</span>
+        </div>
+        <div class="weather-hero-main">
+          <div class="temp-block">
+            <div class="temp">${temperature}<span class="temp-unit">°</span></div>
+          </div>
           <div class="icon-block">
             ${
               weatherIcon
                 ? `<img class="weather-icon-img" src="${weatherIcon}" alt="${condition}" onerror="this.style.display='none'">`
                 : ""
             }
-          </div>
-        </div>
-        <div class="weather-hero-body">
-          <div class="temp-block">
-            <div class="temp">${temperature}<span class="temp-unit">°</span></div>
-            <div class="condition">
-              <span class="condition-text">${condition}</span>
+            <div class="icon-condition">
+              <span class="icon-condition-text">${condition}</span>
             </div>
           </div>
-          <span class="update-time">更新于 ${updated}</span>
         </div>
       </div>
 
