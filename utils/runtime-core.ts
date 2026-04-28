@@ -29,18 +29,13 @@ function shouldUseScreenshot(result: SixtySecondsRenderResult): boolean {
 export class SixtySecondsPluginRuntime {
   private services: SixtySecondsPluginServices;
   private config: SixtySecondsBaseConfig;
-  private readonly logger: {
-    warn(message: string): void;
-  };
 
   constructor(options: {
     services: SixtySecondsPluginServices;
     config: SixtySecondsBaseConfig;
-    logger: { warn(message: string): void };
   }) {
     this.services = options.services;
     this.config = cloneConfig(options.config);
-    this.logger = options.logger;
   }
 
   updateConfig(nextConfig: SixtySecondsBaseConfig): void {
@@ -73,7 +68,11 @@ export class SixtySecondsPluginRuntime {
     event: any,
     instruction: string,
     fallbackMessage: string,
+    error?: unknown,
   ): Promise<void> {
+    if (error != null) {
+      ctx.logger.error(`60s 处理失败: ${String(error)}`);
+    }
     const chatRuntime = this.services.aiService?.getChatRuntime();
     if (chatRuntime) {
       try {
@@ -90,8 +89,8 @@ export class SixtySecondsPluginRuntime {
           ],
         });
         return;
-      } catch (error) {
-        this.logger.warn(`60s notice 发送失败 ${error}`);
+      } catch (noticeError) {
+        ctx.logger.error(`60s notice 发送失败 ${noticeError}`);
       }
     }
 
@@ -172,6 +171,7 @@ export class SixtySecondsPluginRuntime {
     try {
       result = await this.renderReport(request);
     } catch (error) {
+      ctx.logger.error(`60s 请求失败: ${String(error)}`);
       result = {
         ok: false,
         title: "60s",
@@ -209,7 +209,7 @@ export class SixtySecondsPluginRuntime {
         });
         return result;
       } catch (error) {
-        this.logger.warn(`60s 合并转发发送失败，回退文本发送: ${error}`);
+        ctx.logger.error(`60s 合并转发发送失败，回退文本发送: ${error}`);
       }
     }
 
@@ -227,7 +227,7 @@ export class SixtySecondsPluginRuntime {
         }
         return result;
       } catch (error) {
-        this.logger.warn(`60s 截图发送失败，回退文本发送: ${error}`);
+        ctx.logger.error(`60s 截图发送失败，回退文本发送: ${error}`);
       }
     }
 

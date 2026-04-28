@@ -66,7 +66,6 @@ export default definePlugin({
         screenshotService,
       },
       config: baseConfig,
-      logger: ctx.logger,
     });
 
     if (!screenshotService) {
