@@ -82,9 +82,9 @@ export class SixtySecondsPluginRuntime {
           send: true,
           promptInjections: [
             {
-              title: "60s Plugin Error Handling",
+              title: "60s Plugin Notice",
               content:
-                "You are responding for the 60s plugin. Keep replies brief, natural, and actionable. When parameters are missing, ask only for the missing value. If the user provides the missing parameter in follow-up, directly call the matching tool and return the final result.",
+                "A 60s-related action was triggered. Judge whether the user likely intended this action or triggered it accidentally. If it looks accidental or like a casual mention, weave a natural reply into the conversation without mentioning the plugin, tools, or commands. If the user seems to want this feature, respond helpfully. Keep replies brief and natural.",
             },
           ],
         });
