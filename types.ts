@@ -1,6 +1,5 @@
-import type { SixtySecondsService } from "../../src/services/60s";
-import type { AIService } from "../../src/services/ai/types";
-import type { ScreenshotService } from "../../src/services/screenshot/types";
+import type { AIService, ScreenshotService } from "mioku";
+import type { SixtySecondsService } from "mioku-service-60s";
 
 export interface SixtySecondsApiConfig {
   baseUrl: string;

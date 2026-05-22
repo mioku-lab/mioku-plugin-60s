@@ -3,7 +3,7 @@ import {
   getPluginRuntimeState,
   resetPluginRuntimeState,
   setPluginRuntimeState,
-} from "../../src";
+} from "mioku";
 
 export interface SixtySecondsRuntimeState {
   runtime?: SixtySecondsPluginRuntime;
@@ -14,14 +14,14 @@ const PLUGIN_NAME = "60s";
 export function setSixtySecondsRuntimeState(
   nextState: SixtySecondsRuntimeState,
 ): SixtySecondsRuntimeState {
-  return setPluginRuntimeState<SixtySecondsRuntimeState>(
+  return setPluginRuntimeState(
     PLUGIN_NAME,
     nextState,
   );
 }
 
 export function getSixtySecondsRuntimeState(): SixtySecondsRuntimeState {
-  return getPluginRuntimeState<SixtySecondsRuntimeState>(PLUGIN_NAME);
+  return getPluginRuntimeState(PLUGIN_NAME);
 }
 
 export function resetSixtySecondsRuntimeState(): void {

@@ -1,7 +1,5 @@
-import type { AIService } from "../../src/services/ai/types";
-import type { ConfigService } from "../../src/services/config/tpyes";
-import type { SixtySecondsService } from "../../src/services/60s";
-import type { ScreenshotService } from "../../src/services/screenshot/types";
+import type { AIService, ConfigService, ScreenshotService } from "mioku";
+import type { SixtySecondsService } from "mioku-service-60s";
 import { definePlugin, type MiokiContext } from "mioki";
 import { SIXTY_SECONDS_BASE_CONFIG } from "./configs/base";
 import { matchSixtySecondsCommand } from "./utils/commands";

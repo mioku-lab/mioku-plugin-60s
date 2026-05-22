@@ -1,12 +1,25 @@
 {
   "name": "mioku-plugin-60s",
-  "version": "1.1.0",
+  "version": "0.8.0",
   "description": "基于 mioku-60s-service 的资讯与实用信息插件",
   "main": "index.ts",
-  "keywords": ["mioku"],
+  "type": "module",
+  "keywords": [
+    "mioku"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/mioku-lab/mioku-plugin-60s.git"
+  },
+  "peerDependencies": {
+    "mioku": "^0.8.0",
+    "mioki": "^0.16.0",
+    "mioku-service-60s": "^0.8.0"
+  },
+  "devDependencies": {
+    "mioku": "workspace:*",
+    "mioki": "^0.16.0",
+    "mioku-service-60s": "workspace:*"
   },
   "mioku": {
     "services": [
@@ -66,7 +79,7 @@
         },
         {
           "cmd": "/whois <域名>",
-          "desc": "查询域名 Whois 信息，如：/whois example.com",
+          "desc": "查询域名 Whois 信息",
           "role": "member"
         },
         {
@@ -86,7 +99,7 @@
         },
         {
           "cmd": "答案之书",
-          "desc": "随机获取答案，如：答案之书 我应该吃什么",
+          "desc": "随机获取答案",
           "role": "member"
         },
         {

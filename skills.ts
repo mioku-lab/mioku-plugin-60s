@@ -1,4 +1,4 @@
-import type { AISkill, AITool } from "../../src";
+import type { AISkill, AITool } from "mioku";
 import type { SixtySecondsReportType } from "./types";
 import { getSixtySecondsRuntimeState } from "./runtime";
 

@@ -1,4 +1,4 @@
-import type { SixtySecondsClient } from "../../../src/services/60s";
+import type { SixtySecondsClient } from "mioku-service-60s";
 import type {
   SixtySecondsBaseConfig,
   SixtySecondsPluginServices,
