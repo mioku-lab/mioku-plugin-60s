@@ -1,6 +1,6 @@
 {
   "name": "mioku-plugin-60s",
-  "version": "0.8.0",
+  "version": "2.0.0",
   "description": "基于 mioku-60s-service 的资讯与实用信息插件",
   "main": "index.ts",
   "type": "module",
@@ -14,7 +14,7 @@
   "peerDependencies": {
     "mioku": "^0.8.0",
     "mioki": "^0.16.0",
-    "mioku-service-60s": "^0.8.0"
+    "mioku-service-60s": "^2.0.0"
   },
   "devDependencies": {
     "mioku": "workspace:*",
