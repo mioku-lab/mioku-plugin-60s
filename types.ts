@@ -1,11 +1,6 @@
 import type { AIService, ScreenshotService } from "mioku";
 import type { SixtySecondsService } from "mioku-service-60s";
 
-export interface SixtySecondsApiConfig {
-  baseUrl: string;
-  timeoutMs: number;
-}
-
 export interface SixtySecondsTriggerConfig {
   requirePrefix: boolean;
   prefixes: string[];
@@ -25,7 +20,6 @@ export interface SixtySecondsDefaultsConfig {
 }
 
 export interface SixtySecondsBaseConfig {
-  api: SixtySecondsApiConfig;
   trigger: SixtySecondsTriggerConfig;
   behavior: SixtySecondsBehaviorConfig;
   defaults: SixtySecondsDefaultsConfig;

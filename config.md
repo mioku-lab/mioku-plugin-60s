@@ -1,19 +1,7 @@
 ---
 title: 60s 插件配置
-description: 在这里配置 60s 资讯插件的 API 地址、触发方式、默认地区与回复行为
+description: 在这里配置 60s 资讯插件的触发方式、默认地区与回复行为。API 地址和超时请在「服务配置」页面配置。
 fields:
-  - key: base.api.baseUrl
-    label: 60s API 地址
-    type: text
-    description: 60s 服务地址。默认使用官方公开实例，也可以改成你自己部署的 60s API 服务地址。
-    placeholder: https://60s.viki.moe
-
-  - key: base.api.timeoutMs
-    label: 请求超时毫秒
-    type: number
-    description: 插件请求 60s API 时的超时时间。网络较慢或自建服务响应较慢时可以适当调大。
-    placeholder: 15000
-
   - key: base.trigger.requirePrefix
     label: 命令是否必须带前缀
     type: switch
@@ -22,7 +10,7 @@ fields:
   - key: base.trigger.prefixes
     label: 命令前缀列表
     type: json
-    description: 前缀匹配列表，仅在“命令是否必须带前缀”开启时生效。默认是 `[\"60s\", \"/60s\"]`。
+    description: 前缀匹配列表，仅在”命令是否必须带前缀”开启时生效。默认是 `[\”60s\”, \”/60s\”]`。
 
   - key: base.behavior.quoteReply
     label: 是否引用回复
@@ -68,8 +56,6 @@ fields:
 
 ```mioku-fields
 keys:
-  - base.api.baseUrl
-  - base.api.timeoutMs
   - base.trigger.requirePrefix
   - base.trigger.prefixes
 ```

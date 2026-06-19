@@ -12,12 +12,6 @@ import {
 } from "./messages";
 import { renderSixtySecondsReport } from "./renderers";
 
-function normalizeBaseUrl(value: string): string {
-  return String(value || "")
-    .trim()
-    .replace(/\/+$/, "");
-}
-
 function cloneConfig<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
 }
@@ -52,11 +46,7 @@ export class SixtySecondsPluginRuntime {
       throw new Error("60s-service 未加载");
     }
 
-    return service.createClient({
-      baseUrl: normalizeBaseUrl(this.config.api.baseUrl),
-      timeoutMs: this.config.api.timeoutMs,
-      defaultEncoding: "json",
-    });
+    return service.getDefault();
   }
 
   private getScreenshotService() {

@@ -1,6 +1,6 @@
 {
   "name": "mioku-plugin-60s",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "基于 mioku-60s-service 的资讯与实用信息插件",
   "main": "index.ts",
   "type": "module",
@@ -29,21 +29,66 @@
       "screenshot"
     ],
     "accessHooks": [
-      { "id": "60s", "match": "60s" },
-      { "id": "it", "match": "it" },
-      { "id": "金价", "match": "金价" },
-      { "id": "油价", "match": "/(.+)油价$/" },
-      { "id": "天气", "match": "/(.+)天气$/" },
-      { "id": "摸鱼日报", "match": "摸鱼日报" },
-      { "id": "epic", "match": "epic" },
-      { "id": "历史上的今天", "match": "历史上的今天" },
-      { "id": "ai", "match": "ai" },
-      { "id": "whois", "match": "/^\\/whois\\s+/" },
-      { "id": "热搜", "match": "热搜" },
-      { "id": "一言", "match": "一言" },
-      { "id": "疯狂星期四", "match": "疯狂星期四" },
-      { "id": "答案之书", "match": "答案之书" },
-      { "id": "发病", "match": "发病" }
+      {
+        "id": "60s",
+        "match": "60s"
+      },
+      {
+        "id": "it",
+        "match": "it"
+      },
+      {
+        "id": "金价",
+        "match": "金价"
+      },
+      {
+        "id": "油价",
+        "match": "/(.+)油价$/"
+      },
+      {
+        "id": "天气",
+        "match": "/(.+)天气$/"
+      },
+      {
+        "id": "摸鱼日报",
+        "match": "摸鱼日报"
+      },
+      {
+        "id": "epic",
+        "match": "epic"
+      },
+      {
+        "id": "历史上的今天",
+        "match": "历史上的今天"
+      },
+      {
+        "id": "ai",
+        "match": "ai"
+      },
+      {
+        "id": "whois",
+        "match": "/^\\/whois\\s+/"
+      },
+      {
+        "id": "热搜",
+        "match": "热搜"
+      },
+      {
+        "id": "一言",
+        "match": "一言"
+      },
+      {
+        "id": "疯狂星期四",
+        "match": "疯狂星期四"
+      },
+      {
+        "id": "答案之书",
+        "match": "答案之书"
+      },
+      {
+        "id": "发病",
+        "match": "发病"
+      }
     ],
     "help": {
       "title": "60s 资讯",
