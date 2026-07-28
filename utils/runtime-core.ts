@@ -107,7 +107,7 @@ export class SixtySecondsPluginRuntime {
     ctx: any,
     event: any,
     markdown: string,
-  ): Promise<void> {
+  ): Promise<string | undefined> {
     const screenshotService = this.getScreenshotService();
     if (!screenshotService) {
       throw new Error("screenshot-service 未加载");
@@ -123,6 +123,7 @@ export class SixtySecondsPluginRuntime {
       imageUrl: imagePath,
       quoteReply: this.config.behavior.quoteReply,
     });
+    return imagePath;
   }
 
   private async sendScreenshotFromHtml(
@@ -130,7 +131,7 @@ export class SixtySecondsPluginRuntime {
     event: any,
     html: string,
     options?: SixtySecondsRenderResult["screenshotOptions"],
-  ): Promise<void> {
+  ): Promise<string | undefined> {
     const screenshotService = this.getScreenshotService();
     if (!screenshotService) {
       throw new Error("screenshot-service 未加载");
@@ -149,6 +150,7 @@ export class SixtySecondsPluginRuntime {
       imageUrl: imagePath,
       quoteReply: this.config.behavior.quoteReply,
     });
+    return imagePath;
   }
 
   async sendReport(
@@ -157,6 +159,7 @@ export class SixtySecondsPluginRuntime {
     request: SixtySecondsRenderRequest,
   ): Promise<SixtySecondsRenderResult> {
     let result: SixtySecondsRenderResult;
+    const sentImageUrls: string[] = [];
 
     try {
       result = await this.renderReport(request);
@@ -197,6 +200,12 @@ export class SixtySecondsPluginRuntime {
           event,
           nodes: result.forwardNodes,
         });
+        for (const node of result.forwardNodes) {
+          if (node.image) {
+            sentImageUrls.push(node.image);
+          }
+        }
+        result.sentImageUrls = sentImageUrls;
         return result;
       } catch (error) {
         ctx.logger.error(`60s 合并转发发送失败，回退文本发送: ${error}`);
@@ -206,15 +215,26 @@ export class SixtySecondsPluginRuntime {
     if (shouldUseScreenshot(result)) {
       try {
         if (result.html) {
-          await this.sendScreenshotFromHtml(
+          const imagePath = await this.sendScreenshotFromHtml(
             ctx,
             event,
             result.html,
             result.screenshotOptions,
           );
+          if (imagePath) {
+            sentImageUrls.push(imagePath);
+          }
         } else if (result.markdown) {
-          await this.sendScreenshotFromMarkdown(ctx, event, result.markdown);
+          const imagePath = await this.sendScreenshotFromMarkdown(
+            ctx,
+            event,
+            result.markdown,
+          );
+          if (imagePath) {
+            sentImageUrls.push(imagePath);
+          }
         }
+        result.sentImageUrls = sentImageUrls;
         return result;
       } catch (error) {
         ctx.logger.error(`60s 截图发送失败，回退文本发送: ${error}`);
@@ -228,6 +248,10 @@ export class SixtySecondsPluginRuntime {
       imageUrl: result.imageUrl,
       quoteReply: this.config.behavior.quoteReply,
     });
+    if (result.imageUrl) {
+      sentImageUrls.push(result.imageUrl);
+    }
+    result.sentImageUrls = sentImageUrls;
     return result;
   }
 }

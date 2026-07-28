@@ -84,4 +84,5 @@ export interface SixtySecondsRenderResult {
   screenshotOptions?: SixtySecondsRenderScreenshotOptions;
   preferScreenshot?: boolean;
   noticeInstruction?: string;
+  sentImageUrls?: string[];
 }

@@ -1,4 +1,4 @@
-import type { AISkill, AITool } from "mioku";
+import { TOOL_RESULT_FOLLOWUP_KEY, type AISkill, type AITool } from "mioku";
 import type { SixtySecondsReportType } from "./types";
 import { getSixtySecondsRuntimeState } from "./runtime";
 
@@ -11,15 +11,13 @@ const sixtySecondsSkills: AISkill[] = [
     tools: [
       {
         name: "send_report",
-        description:
-          "发送一个报告到当前聊天。油价需要 region，天气需要 query，其余参数按类型选填。热搜和Whois需要 query 参数。",
+        description: "发送一个报告到当前聊天",
         parameters: {
           type: "object",
           properties: {
             report_type: {
               type: "string",
-              description:
-                "报告类型，可选 world_news、ai_news、exchange_rate、history、epic_games、it_news、gold_price、fuel_price、weather、moyu_daily、hot_search、whois",
+              description: "报告类型",
               enum: [
                 "world_news",
                 "ai_news",
@@ -45,7 +43,8 @@ const sixtySecondsSkills: AISkill[] = [
             },
             query: {
               type: "string",
-              description: "天气查询地区/热搜/Whois查询域名，例如 杭州、北京海淀、example.com",
+              description:
+                "天气查询地区/热搜/Whois查询域名，例如 杭州、北京海淀、example.com",
             },
           },
           required: ["report_type"],
@@ -82,10 +81,29 @@ const sixtySecondsSkills: AISkill[] = [
                 : undefined,
           });
 
+          if (!result.ok) {
+            return result.text;
+          }
+
           const content = result.markdown || result.text;
-          return result.ok
-            ? `已发送${result.title}。以下是报告的主要内容，知晓即可，不需要再向用户重复：\n${content}`
-            : result.text;
+          const summary = `已发送${result.title}。以下是报告的主要内容，知晓即可，不需要再向用户重复：\n${content}`;
+
+          const sentImageUrls = (result.sentImageUrls || []).filter(Boolean);
+          const isMultimodal = Boolean(runtimeCtx?.isMultimodal);
+          if (sentImageUrls.length === 0 || !isMultimodal) {
+            return summary;
+          }
+
+          return {
+            success: true,
+            title: result.title,
+            preview: content,
+            sent_images: sentImageUrls.length,
+            note: "图片已发送给用户。",
+            [TOOL_RESULT_FOLLOWUP_KEY]: {
+              text: `${result.title} 的图片已发送`,
+            },
+          };
         },
       } as AITool,
     ],

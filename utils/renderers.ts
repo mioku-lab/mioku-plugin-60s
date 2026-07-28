@@ -189,36 +189,40 @@ export async function renderSixtySecondsReport(options: {
       const result = (await client.periodic.daily60s()) as any;
       const data = result?.data;
       const imageUrl = resolveWorldNewsImageUrl(data);
+      const newsItems = Array.isArray(data?.news)
+        ? (data.news as string[])
+        : [];
+      const title = `60s 新闻 ${data?.date || ""}`.trim();
+      const sections: string[] = [];
+      if (newsItems.length > 0) {
+        sections.push(
+          markdownBulleted(
+            "今日新闻",
+            limitItems(newsItems, maxItems).map((item) => `**${item}**`),
+          ),
+        );
+      }
+      if (data?.tip) {
+        sections.push(markdownSection("提示", [markdownQuote([data.tip])]));
+      }
+      const markdown = sections.length > 0
+        ? buildMarkdownCard(title, sections)
+        : undefined;
       if (imageUrl) {
         return {
           ok: true,
-          title: `60s 新闻 ${data?.date || ""}`.trim(),
-          text: `60s 新闻 ${data?.date || ""}`.trim(),
+          title,
+          text: markdown || title,
+          markdown,
           imageUrl,
           preferScreenshot: false,
         };
       }
-      const newsItems = Array.isArray(data?.news)
-        ? (data.news as string[])
-        : [];
-      const sections: string[] = [];
-      sections.push(
-        markdownBulleted(
-          "今日新闻",
-          limitItems(newsItems, maxItems).map((item) => `**${item}**`),
-        ),
-      );
-      if (data?.tip) {
-        sections.push(markdownSection("提示", [markdownQuote([data.tip])]));
-      }
       return {
         ok: true,
-        title: `60s 新闻 ${data?.date || ""}`.trim(),
-        text: `60s 新闻 ${data?.date || ""}`.trim(),
-        markdown: buildMarkdownCard(
-          `60s 新闻 ${data?.date || ""}`.trim(),
-          sections,
-        ),
+        title,
+        text: markdown || title,
+        markdown,
         preferScreenshot: true,
       };
     }
