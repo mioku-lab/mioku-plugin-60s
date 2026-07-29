@@ -1,6 +1,6 @@
-import type { AIService, ConfigService, ScreenshotService } from "mioku";
-import type { SixtySecondsService } from "mioku-service-60s";
 import { definePlugin, type MiokiContext } from "mioki";
+import { SixtySecondsService } from "mioku-service-60s";
+import { getService, Services } from "mioku";
 import { SIXTY_SECONDS_BASE_CONFIG } from "./configs/base";
 import { matchSixtySecondsCommand } from "./utils/commands";
 import { SixtySecondsPluginRuntime } from "./utils/runtime-core";
@@ -33,14 +33,10 @@ export default definePlugin({
   description: "调用 60s API 获取新闻、汇率、天气和摸鱼日报等信息",
 
   async setup(ctx: MiokiContext) {
-    const sixtySecondsService = ctx.services?.["60s"] as
-      | SixtySecondsService
-      | undefined;
-    const configService = ctx.services?.config as ConfigService | undefined;
-    const aiService = ctx.services?.ai as AIService | undefined;
-    const screenshotService = ctx.services?.screenshot as
-      | ScreenshotService
-      | undefined;
+    const sixtySecondsService = getService(ctx, SixtySecondsService);
+    const configService = getService(ctx, Services.Config);
+    const aiService = getService(ctx, Services.AI);
+    const screenshotService = getService(ctx, Services.Screenshot);
 
     let baseConfig = cloneConfig(SIXTY_SECONDS_BASE_CONFIG);
 
@@ -106,8 +102,7 @@ export default definePlugin({
         sixtySecondsService,
         aiService,
         screenshotService:
-          (ctx.services?.screenshot as ScreenshotService | undefined) ||
-          screenshotService,
+          getService(ctx, Services.Screenshot) || screenshotService,
       });
 
       await runtime.sendReport(ctx, event, {

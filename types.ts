@@ -1,5 +1,5 @@
 import type { AIService, ScreenshotService } from "mioku";
-import type { SixtySecondsService } from "mioku-service-60s";
+import type { SixtySecondsServiceApi } from "mioku-service-60s";
 
 export interface SixtySecondsTriggerConfig {
   requirePrefix: boolean;
@@ -44,7 +44,7 @@ export type SixtySecondsReportType =
   | "sickness_essay";
 
 export interface SixtySecondsPluginServices {
-  sixtySecondsService?: SixtySecondsService;
+  sixtySecondsService?: SixtySecondsServiceApi;
   aiService?: AIService;
   screenshotService?: ScreenshotService;
 }
