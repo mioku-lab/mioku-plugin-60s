@@ -4,11 +4,8 @@ import { definePlugin, type MiokiContext } from "mioki";
 import { SIXTY_SECONDS_BASE_CONFIG } from "./configs/base";
 import { matchSixtySecondsCommand } from "./utils/commands";
 import { SixtySecondsPluginRuntime } from "./utils/runtime-core";
-import {
-  resetSixtySecondsRuntimeState,
-  setSixtySecondsRuntimeState,
-} from "./runtime";
 import type { SixtySecondsBaseConfig } from "./types";
+import { createSixtySecondsSkills } from "./skills/sixty-seconds";
 
 function cloneConfig<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
@@ -70,7 +67,9 @@ export default definePlugin({
       ctx.logger.warn("screenshot 服务未注入，60s 将回退为文本发送");
     }
 
-    setSixtySecondsRuntimeState({ runtime });
+    if (aiService) {
+      for (const skill of createSixtySecondsSkills(runtime)) aiService.registerSkill(skill);
+    }
 
     const disposers: Array<() => void> = [];
     if (configService) {
@@ -118,10 +117,8 @@ export default definePlugin({
     });
 
     return () => {
-      for (const dispose of disposers) {
-        dispose();
-      }
-      resetSixtySecondsRuntimeState();
+      for (const dispose of disposers) dispose();
+      if (aiService) aiService.removeSkill("sixty_seconds");
     };
   },
 });
