@@ -77,7 +77,7 @@ export default definePlugin({
       );
     }
 
-    ctx.handle("message", async (event: any) => {
+    ctx.handle("message", async (event) => {
       const rawText = ctx.text(event)?.trim();
       if (!rawText) {
         return;
@@ -92,7 +92,9 @@ export default definePlugin({
       }
 
       const userNickname =
-        event.sender?.card || event.sender?.nickname || undefined;
+        ("card" in event.sender
+          ? event.sender.card
+          : undefined) || event.sender?.nickname || undefined;
       const matched = matchSixtySecondsCommand(commandText, userNickname);
       if (!matched) {
         return;
