@@ -1,4 +1,4 @@
-import { definePlugin, type MiokiContext } from "mioki";
+import { definePlugin, type MiokuContext } from "mioku";
 import { SixtySecondsService } from "mioku-service-60s";
 import { getService, Services } from "mioku";
 import { SIXTY_SECONDS_BASE_CONFIG } from "./configs/base";
@@ -32,7 +32,7 @@ export default definePlugin({
   version: "1.0.0",
   description: "调用 60s API 获取新闻、汇率、天气和摸鱼日报等信息",
 
-  async setup(ctx: MiokiContext) {
+  async setup(ctx: MiokuContext) {
     const sixtySecondsService = getService(ctx, SixtySecondsService);
     const configService = getService(ctx, Services.Config);
     const aiService = getService(ctx, Services.AI);
@@ -91,10 +91,9 @@ export default definePlugin({
         commandText = stripResult.value || "60s";
       }
 
+      const sender = event.sender;
       const userNickname =
-        ("card" in event.sender
-          ? event.sender.card
-          : undefined) || event.sender?.nickname || undefined;
+        (sender && "card" in sender ? sender.card : undefined) || sender?.nickname || undefined;
       const matched = matchSixtySecondsCommand(commandText, userNickname);
       if (!matched) {
         return;
