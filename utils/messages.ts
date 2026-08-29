@@ -7,10 +7,10 @@ export async function replyWithParts(options: {
   parts: any[];
   quoteReply?: boolean;
 }): Promise<void> {
-  const { event, parts, quoteReply = false } = options;
+  const { ctx, event, parts, quoteReply = false } = options;
   const payload = [...parts];
   if (quoteReply && event?.message_id != null) {
-    payload.unshift({ type: "reply", id: String(event.message_id) });
+    payload.unshift(ctx.segment.reply(event.message_id));
   }
   await event.reply(payload.length === 1 ? payload[0] : payload);
 }
@@ -69,18 +69,15 @@ export async function replyWithForwardNodes(options: {
     return;
   }
 
-  const selfId = event?.self_id != null ? Number(event.self_id) : undefined;
-  const bot =
-    selfId != null && typeof ctx?.pickBot === "function"
-      ? ctx.pickBot(selfId)
-      : undefined;
+  const selfId = event?.self_id;
+  const bot = event?.bot;
   if (!bot || !ctx?.segment?.node) {
     throw new Error("当前上下文不支持发送合并转发消息");
   }
 
   const nickname =
     String(ctx?.bot?.nickname || event?.sender?.card || event?.sender?.nickname || "60s资讯");
-  const userId = String(selfId || ctx?.bot?.bot_id || event?.self_id || 0);
+  const userId = selfId || ctx?.bot?.bot_id || event?.self_id || 0;
 
   const buildForwardNodes = (nodes: typeof options.nodes) => {
     const result: any[] = [];
@@ -198,8 +195,5 @@ function isLocalPath(file: string): boolean {
 }
 
 function toImageSegment(ctx: any, file: string): any {
-  if (ctx?.segment?.image) {
-    return ctx.segment.image(file);
-  }
-  return { type: "image", file };
+  return ctx.segment.image(file);
 }
