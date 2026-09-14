@@ -29,8 +29,6 @@ function stripCommandPrefix(
 
 export default definePlugin({
   name: "60s",
-  version: "1.0.0",
-  description: "调用 60s API 获取新闻、汇率、天气和摸鱼日报等信息",
 
   async setup(ctx: MiokuContext) {
     const sixtySecondsService = getService(ctx, SixtySecondsService);
