@@ -1,17 +1,7 @@
 ---
 title: 60s 插件配置
-description: 在这里配置 60s 资讯插件的触发方式、默认地区与回复行为。API 地址和超时请在「服务配置」页面配置。
+description: 在这里配置 60s 资讯插件的默认地区与回复行为。API 地址和超时请在「服务配置」页面配置。
 fields:
-  - key: base.trigger.requirePrefix
-    label: 命令是否必须带前缀
-    type: switch
-    description: 开启后只有 `60s` 或 `/60s` 前缀消息才会触发插件。关闭后，`it`、`金价`、`地区+油价`、`地区天气`、`摸鱼日报`、`epic`、`历史上的今天`、`ai` 都可直接触发。
-
-  - key: base.trigger.prefixes
-    label: 命令前缀列表
-    type: json
-    description: 前缀匹配列表，仅在”命令是否必须带前缀”开启时生效。默认是 `[\”60s\”, \”/60s\”]`。
-
   - key: base.behavior.quoteReply
     label: 是否引用回复
     type: switch
@@ -53,12 +43,6 @@ fields:
     description: 执行 `it` 指令时默认返回的资讯条数，插件会限制在 1 到 50 之间。
     placeholder: 5
 ---
-
-```mioku-fields
-keys:
-  - base.trigger.requirePrefix
-  - base.trigger.prefixes
-```
 
 ```mioku-fields
 keys:

@@ -1,4 +1,4 @@
-import { definePlugin, type MiokuContext } from "mioku";
+import { definePlugin, type CommandDefinition, type MessageEvent, type MiokuContext } from "mioku";
 import { SixtySecondsService } from "mioku-service-60s";
 import { getService, Services } from "mioku";
 import { SIXTY_SECONDS_BASE_CONFIG } from "./configs/base";
@@ -9,22 +9,6 @@ import { createSixtySecondsSkills } from "./skills/sixty-seconds";
 
 function cloneConfig<T>(value: T): T {
   return JSON.parse(JSON.stringify(value)) as T;
-}
-
-function stripCommandPrefix(
-  text: string,
-  prefixes: string[],
-): { value: string; hasPrefix: boolean } {
-  const trimmed = String(text || "").trim();
-  for (const prefix of prefixes) {
-    if (trimmed.startsWith(prefix)) {
-      return {
-        value: trimmed.slice(prefix.length).trim(),
-        hasPrefix: true,
-      };
-    }
-  }
-  return { value: trimmed, hasPrefix: false };
 }
 
 export default definePlugin({
@@ -75,40 +59,41 @@ export default definePlugin({
       );
     }
 
-    ctx.handle("message", async (event) => {
-      const rawText = ctx.text(event)?.trim();
-      if (!rawText) {
-        return;
-      }
-      const stripResult = stripCommandPrefix(
-        rawText,
-        baseConfig.trigger.prefixes,
-      );
-      let commandText = rawText;
-      if (stripResult.hasPrefix) {
-        commandText = stripResult.value || "60s";
-      }
-
+    const run = async (event: MessageEvent, text: string) => {
       const sender = event.sender;
       const userNickname =
         (sender && "card" in sender ? sender.card : undefined) || sender?.nickname || undefined;
-      const matched = matchSixtySecondsCommand(commandText, userNickname);
-      if (!matched) {
-        return;
-      }
-
+      const matched = matchSixtySecondsCommand(text, userNickname);
+      if (!matched) return;
       runtime.updateServices({
         sixtySecondsService,
         aiService,
-        screenshotService:
-          getService(ctx, Services.Screenshot) || screenshotService,
+        screenshotService: getService(ctx, Services.Screenshot) || screenshotService,
       });
-
       await runtime.sendReport(ctx, event, {
         type: matched.reportType,
         ...matched.requestOverrides,
       });
-    });
+    };
+
+    const cmd = (command: CommandDefinition) =>
+      ctx.command({ ...command, prefixes: false });
+
+    cmd({ name: "60s", description: "获取今日 60s 新闻简报", handler: ({ event, body }) => run(event, body) });
+    cmd({ name: "it", description: "获取实时 IT 资讯", handler: ({ event, body }) => run(event, body) });
+    cmd({ name: "金价", description: "获取黄金价格", handler: ({ event, body }) => run(event, body) });
+    cmd({ name: "摸鱼日报", description: "获取摸鱼日报", handler: ({ event, body }) => run(event, body) });
+    cmd({ name: "epic", description: "获取 Epic 免费游戏", handler: ({ event, body }) => run(event, body) });
+    cmd({ name: "历史上的今天", description: "获取历史上的今天", handler: ({ event, body }) => run(event, body) });
+    cmd({ name: "ai", description: "获取 AI 资讯快报", handler: ({ event, body }) => run(event, body) });
+    cmd({ name: "油价", match: /(.*)油价\s*$/, description: "获取汽油价格，如：杭州油价", handler: ({ event, body }) => run(event, body) });
+    cmd({ name: "天气", match: /(.*)天气\s*$/, description: "获取实时天气，如：北京天气", handler: ({ event, body }) => run(event, body) });
+    cmd({ name: "热搜", description: "获取微博、抖音、百度等热搜榜单", handler: ({ event, body }) => run(event, body) });
+    cmd({ name: "一言", description: "随机获取一句名言", handler: ({ event, body }) => run(event, body) });
+    cmd({ name: "疯狂星期四", match: /^(?:疯狂星期四|kfc)\s*$/i, description: "获取 KFC 疯狂星期四文案", handler: ({ event, body }) => run(event, body) });
+    cmd({ name: "答案之书", match: /^答案之书/, description: "随机获取答案", handler: ({ event, body }) => run(event, body) });
+    cmd({ name: "发病", match: /^发病/, description: "生成发病文学", handler: ({ event, body }) => run(event, body) });
+    cmd({ name: "whois", match: /^\/whois(?:\s|$)/, description: "查询域名 Whois 信息", handler: ({ event, body }) => run(event, body) });
 
     return () => {
       for (const dispose of disposers) dispose();
